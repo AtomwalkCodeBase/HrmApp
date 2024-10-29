@@ -211,7 +211,7 @@ const HomePage = () => {
       <StatusBar barStyle={'light-content'} backgroundColor={'#a970ff'} />
       {/* Header */}
       <Header>
-      <GradientHeader colors={['#7a00ff', '#b700ff']} start={[0.0, 0.5]} end={[1.0, 0.5]}>
+      <GradientHeader colors={['#a970ff', '#a970ff']} start={[0.0, 0.5]} end={[1.0, 0.5]}>
         
         
         <HeaderContent>

@@ -25,6 +25,7 @@ const SearchContainer = styled.View`
   margin-bottom: 15px;
 `;
 
+
 const SearchInput = styled.TextInput`
   flex: 1;
   font-size: 16px;
@@ -269,7 +270,7 @@ const LeaveScreen = () => {
         <ApplicationStatusContainer>
           <View>
           <DetailText>
-            Emp.: <DetailHighlight>{leave.emp_data.emp_id} [{leave.emp_data.name}]</DetailHighlight>
+            <DetailHighlight>{leave.emp_data.emp_id} [{leave.emp_data.name}]</DetailHighlight>
           </DetailText>
           <DetailText style={{ paddingTop: '10px' }}>Date: {leave.from_date} to {leave.to_date}</DetailText>
           {/* <DetailText>

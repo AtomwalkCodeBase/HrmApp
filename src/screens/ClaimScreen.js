@@ -169,16 +169,14 @@ const ClaimScreen = () => {
     }
   };
 
-  console.log('Claim Data---',claimData)
-
   const renderClaimItem = ({ item }) => (
     <ClaimCard 
     key={item.id}
     status={item.status_display}
     onPress={() => handleCardPress(item)}>
       <View>
+      <ClaimText>{item.claim_id}</ClaimText>
       <ClaimText>Item Name: {item.item_name}</ClaimText>
-      <ClaimText>Claim ID: {item.claim_id}</ClaimText>
       <ClaimText>Expense Date: {item.expense_date}</ClaimText>
 
       {/* Display Claim Status based on expense_status */}
