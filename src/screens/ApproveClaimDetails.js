@@ -5,9 +5,9 @@ import styled from 'styled-components/native';
 import { getProfileInfo } from '../services/authServices';
 import { getClaimApprover, postClaimAction } from '../services/productServices';
 import HeaderComponent from '../components/HeaderComponent';
-import AmountInput from '../components/AmountInput'; // Custom Amount Input component
-import RemarksInput from '../components/RemarkInput'; // Custom Remarks Input component
-import DropdownPicker from '../components/DropdownPicker'; // Custom DropdownPicker component
+import AmountInput from '../components/AmountInput';
+import RemarksInput from '../components/RemarkInput';
+import DropdownPicker from '../components/DropdownPicker';
 
 const Container = styled.View`
   flex: 1;

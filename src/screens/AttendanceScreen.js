@@ -66,12 +66,10 @@ const EmpImageContainer = styled.View`
   border-radius: 30px;
 `;
 
-
 const Value = styled.Text`
   font-size: 16px;
   margin-bottom: 10px;
 `;
-
 
 const AttendanceCard = styled.View`
   border: 1px solid #007bff;
@@ -118,8 +116,6 @@ const AddAttendance = () => {
       headerShown: false,
     });
   }, [navigation]);
-
-  console.log('Att data---',attendance)
 
   useEffect(() => {
     const date = moment().format('DD-MM-YYYY');
@@ -228,7 +224,8 @@ const AddAttendance = () => {
       <HeaderComponent headerTitle="My Attendance" onBackPress={() => navigation.goBack()} />
       <Container>
         <Label>Date: {currentDate}</Label>
-        <Label>Time: {currentTime}</Label><EmpDataContainer>
+        <Label>Time: {currentTime}</Label>
+        <EmpDataContainer>
           <EmpImageContainer>
             <Image
               source={{ uri: `${employeeData?.image}` }}
@@ -242,50 +239,61 @@ const AddAttendance = () => {
         </EmpDataContainer>
 
         <AttendanceCard>
-
           <Text style={{ fontWeight: 'bold', alignItems: 'center', marginBottom: 10 }}>Attendance</Text>
-          <AttendanceButton>
-            <Button
-              onPress={() => handleCheck('ADD')}
-              checked={checkedIn}
-              type="checkin"
-              disabled={checkedIn || attendance.geo_status === 'O'}
-            >
-              <Entypo
-                name="location-pin"
-                size={24}
-                color={checkedIn || attendance.geo_status === 'O' ? 'white' : 'black'}
-              />
-              <ButtonText disabled={checkedIn || attendance.geo_status === 'O'}>
-                {checkedIn || attendance.geo_status === 'O' ? `Checked-In at ${attendance.start_time}` : 'CHECK IN'}
-              </ButtonText>
-            </Button>
-            {attendance.start_time && (
+
+          {attendance && attendance.start_time === null ? (
+            <Text style={{ color: 'red', textAlign: 'center', marginBottom: 10 }}>
+              On Leave or Holiday
+            </Text>
+          ) : (
+            <AttendanceButton>
               <Button
-                onPress={() => handleCheck('UPDATE')}
-                type="checkout"
-                disabled={attendance.geo_status === 'O'}
+                onPress={() => handleCheck('ADD')}
+                checked={checkedIn}
+                type="checkin"
+                disabled={checkedIn || attendance.geo_status === 'O'}
               >
-                <Feather
-                  name="log-out"
+                <Entypo
+                  name="location-pin"
                   size={24}
-                  color={attendance.geo_status === 'O' ? 'white' : 'black'}
+                  color={checkedIn || attendance.geo_status === 'O' ? 'white' : 'black'}
                 />
-                <ButtonText disabled={attendance.geo_status === 'O'}>
-                  {attendance.geo_status === 'O' ? `Checked-Out at ${attendance.end_time}` : 'CHECK OUT'}
+                <ButtonText disabled={checkedIn || attendance.geo_status === 'O'}>
+                  {checkedIn || attendance.geo_status === 'O' ? `Checked-In at ${attendance.start_time}` : 'CHECK IN'}
                 </ButtonText>
               </Button>
-            )}
-          </AttendanceButton>
-          {attendance.start_time && (
-            <RemarksTextArea 
-              remark={remark} 
-              setRemark={setRemark}
-              error={errors.remarks}
-            />
+              {attendance.start_time && (
+                <Button
+                  onPress={() => handleCheck('UPDATE')}
+                  checked={checkedIn}
+                  type="checkout"
+                  disabled={!checkedIn || (attendance.geo_status !== 'I')}
+                >
+                  <Feather
+                    name="log-out"
+                    size={20}
+                    color={!checkedIn || (attendance.geo_status !== 'I') ? 'white' : 'black'}
+                  />
+                  <ButtonText disabled={!checkedIn || (attendance.geo_status !== 'I')}>
+                    {attendance.geo_status === 'I' ? 'CHECK OUT' : `Checked-Out at ${attendance.end_time}`}
+                  </ButtonText>
+                </Button>
+              )}
+            </AttendanceButton>
           )}
+        </AttendanceCard>
 
-</AttendanceCard>
+        {attendance.geo_status === 'I' && (
+          <>
+            <Label>Remarks</Label>
+            <RemarkInput
+              placeholder="Enter Remarks"
+              value={remark}
+              onChangeText={(text) => setRemark(text)}
+            />
+          </>
+        )}
+
         <CheckStatusButton onPress={handlePressStatus}>
           <CheckStatusText>Check Status</CheckStatusText>
         </CheckStatusButton>

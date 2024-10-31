@@ -1,15 +1,22 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import styled from 'styled-components/native';
 import { getEmpHoliday, postEmpLeave } from '../services/productServices';
-import { useNavigation } from 'expo-router';
+import { useNavigation, useRouter } from 'expo-router';
 import HeaderComponent from '../components/HeaderComponent';
+import HolidayCard from '../components/HolidayCard';
 import { getProfileInfo } from '../services/authServices';
 
 const monthNameMap = {
   'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4,
   'Jun': 5, 'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9,
   'Nov': 10, 'Dec': 11,
+};
+
+const monthFullNameMap = {
+  'January': 0, 'February': 1, 'March': 2, 'April': 3, 'May': 4,
+  'June': 5, 'July': 6, 'August': 7, 'September': 8, 'October': 9,
+  'November': 10, 'December': 11,
 };
 
 const Container = styled.View`
@@ -22,13 +29,6 @@ const CardRow = styled.View`
   flex-direction: row;
   justify-content: center;
   flex-wrap: wrap;
-`;
-
-const HeaderText = styled.Text`
-  font-size: 20px;
-  font-weight: bold;
-  text-align: center;
-  margin-bottom: 10px;
 `;
 
 const TabContainer = styled.View`
@@ -49,15 +49,6 @@ const TabText = styled.Text`
   font-weight: bold;
 `;
 
-const HolidayBox = styled.View`
-  background-color: #f8f8f8;
-  border-radius: 10px;
-  padding: 15px;
-  margin-bottom: 15px;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-`;
 
 const LeaveCard = styled.TouchableOpacity`
   width: 95%;
@@ -78,19 +69,15 @@ const LeaveNumber = styled.Text`
   margin-bottom: 5px;
 `;
 
-const HolidayText = styled.Text`
+const HolidayInfo = styled.View`
+  flex: 1;
+`;
+
+const HolidayName = styled.Text`
   font-size: 16px;
-`;
-
-const HolidayButton = styled(TouchableOpacity)`
-  padding: 8px 16px;
-  border-radius: 10px;
-  background-color: ${({ color }) => color};
-`;
-
-const HolidayButtonText = styled.Text`
-  color: #fff;
   font-weight: bold;
+  color: #666;
+  margin-bottom: 7px;
 `;
 
 const HolidayScreen = () => {
@@ -100,6 +87,9 @@ const HolidayScreen = () => {
   const [profile, setProfile] = useState({});
   const navigation = useNavigation();
   const currentYear = new Date().getFullYear();
+
+  const router = useRouter();
+
 
   useLayoutEffect(() => {
     navigation.setOptions({ headerShown: false });
@@ -118,94 +108,85 @@ const HolidayScreen = () => {
     });
   };
 
+  const handleBackPress = () => {
+    router.push('home');
+  };
+
   const processHolidayData = data => {
     const holidayMap = {};
     for (let i = 0; i < 12; i++) holidayMap[i] = [];
-
+  
     if (data.h_list && Array.isArray(data.h_list)) {
       data.h_list.forEach(holiday => {
         const { day, h_type, remarks, is_opted } = holiday;
         const [dayNum, monthName, year] = day.split('-');
         const month = monthNameMap[monthName];
         if (month !== undefined && parseInt(year, 10) === currentYear) {
+          const dateObj = new Date(year, month, dayNum);
+          const weekday = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
+  
           holidayMap[month].push({
             name: remarks,
             date: day,
+            weekday: weekday, // Add weekday here
             type: h_type === 'O' ? 'Optional' : 'Mandatory',
             is_opted: is_opted || false,
           });
         }
       });
     }
-
-    if (data.holiday_list && Array.isArray(data.holiday_list)) {
-      data.holiday_list.forEach(holidayDate => {
-        const [day, monthName, year] = holidayDate.split('-');
-        const month = monthNameMap[monthName];
-        if (month !== undefined && parseInt(year, 10) === currentYear) {
-          holidayMap[month].push({
-            name: 'Company Holiday',
-            date: holidayDate,
-            type: 'Mandatory',
-          });
-        }
-      });
-    }
-
+  
+  
     setHolidays(holidayMap);
   };
+  
 
-  const handleOptHolidayClick = date => {
+  const handleHolidayAction = (date, actionType) => {
     const [day, monthName, year] = date.split('-');
     const month = monthNameMap[monthName];
-    const fromDate = new Date(year, month, day);
-    const formattedDate = `${fromDate.getDate().toString().padStart(2, '0')}-${(fromDate.getMonth() + 1).toString().padStart(2, '0')}-${fromDate.getFullYear()}`;
-
+    const holidayDate = new Date(year, month, day);
+    const currentDate = new Date();
+  
+    if (actionType === 'cancel' && currentDate >= holidayDate) {
+      Alert.alert("Cancellation Not Allowed", "You cannot cancel a holiday that has already passed.");
+      return;
+    }
+  
+    const formattedDate = `${day.padStart(2, '0')}-${(month + 1).toString().padStart(2, '0')}-${year}`;
+  
     const leavePayload = {
       emp_id: `${profile?.emp_data?.id}`,
       from_date: formattedDate,
       to_date: formattedDate,
       remarks: 'Optional Holiday',
       leave_type: 'OH',
-      call_mode: 'ADD',
+      call_mode: actionType === 'opt' ? 'ADD' : 'CANCEL',
     };
-
+  
+    // If canceling, add a placeholder leave_id (to be replaced as needed).
+    if (actionType === 'cancel') leavePayload.leave_id = '999999999';
+  
     postEmpLeave(leavePayload)
-      .then(() => Alert.alert('Application Submitted', 'Holiday applied successfully'))
-      .catch(() => Alert.alert('Holiday Application Failed', 'Failed to apply optional holiday.'));
-  };
-
-  console.log("Leave Data++--",holidaydata)
-
-  const handleCancelHolidayClick = date => {
-    console.log('Optional holiday canceled:', date);
-    const [day, monthName, year] = date.split('-');
-    const month = monthNameMap[monthName];
-    const fromDate = new Date(year, month, day);
-    const formattedDate = `${fromDate.getDate().toString().padStart(2, '0')}-${(fromDate.getMonth() + 1).toString().padStart(2, '0')}-${fromDate.getFullYear()}`;
-
-    const leavePayload = {
-      emp_id: `${profile?.emp_data?.id}`,
-      leave_id: `999999999`,//For the time beign we set the temporary leave id but letter it will be modified.
-      from_date: formattedDate,
-      to_date: formattedDate,
-      remarks: 'Optional Holiday',
-      leave_type: 'OH',
-      call_mode: 'CANCEL',
-    };
-
-    postEmpLeave(leavePayload)
-      .then(() => Alert.alert('Application Submitted', 'Holiday applied successfully'))
-      .catch((error) => {
-        Alert.alert('Cancelation Failed', 'Failed to Cancel.');
-        console.log('Error Data', error)
+      .then(() => {
+        Alert.alert(
+          `Holiday ${actionType === 'opt' ? 'Applied' : 'Canceled'}`,
+          `Holiday ${actionType === 'opt' ? 'applied successfully' : 'canceled successfully'}`
+        );
+        router.push({ pathname: 'HolidayList' });
+      })
+      .catch(() => {
+        Alert.alert(
+          `Holiday ${actionType === 'opt' ? 'Application Failed' : 'Cancellation Failed'}`,
+          `Failed to ${actionType === 'opt' ? 'apply' : 'cancel'} the optional holiday.`
+        );
       });
   };
-
+    
   return (
     <>
-      <HeaderComponent headerTitle="Holiday List" onBackPress={() => navigation.goBack()} />
+      <HeaderComponent headerTitle="Holiday List" onBackPress={handleBackPress} />
       <Container>
+        {/* Render max optional holidays card and tabs */}
         <CardRow>
           <LeaveCard bgColor="#e6ecff" borderColor="#4d88ff">
             <LeaveNumber color="#4d88ff">Max Optional Holiday : {holidaydata?.no_optional_holidays}</LeaveNumber>
@@ -225,25 +206,20 @@ const HolidayScreen = () => {
           {Object.entries(holidays).map(([monthIndex, monthHolidays]) => (
             monthHolidays.filter(holiday => activeTab === 'Company Holiday' ? holiday.type === 'Mandatory' : holiday.type === 'Optional').length > 0 && (
               <View key={monthIndex}>
-                <HeaderText>{Object.keys(monthNameMap)[monthIndex]}</HeaderText>
+                <HolidayInfo>
+                  <HolidayName>{Object.keys(monthFullNameMap)[monthIndex]}</HolidayName>
+                </HolidayInfo>
                 {monthHolidays
                   .filter(holiday => activeTab === 'Company Holiday' ? holiday.type === 'Mandatory' : holiday.type === 'Optional')
                   .map((holiday, index) => (
-                    <HolidayBox key={index}>
-                      <HolidayText>{holiday.name}</HolidayText>
-                      <HolidayText>{holiday.date}</HolidayText>
-                      {holiday.type === 'Optional' && (
-                        holiday.is_opted ? (
-                          <HolidayButton color="#FF0000" onPress={() => handleCancelHolidayClick(holiday.date)}>
-                            <HolidayButtonText>Cancel</HolidayButtonText>
-                          </HolidayButton>
-                        ) : (
-                          <HolidayButton color="#555" onPress={() => handleOptHolidayClick(holiday.date)}>
-                            <HolidayButtonText>Opt Holiday</HolidayButtonText>
-                          </HolidayButton>
-                        )
-                      )}
-                    </HolidayBox>
+                    <HolidayCard
+                      data={index}
+                      holiday={holiday}
+                      onOptClick={() => handleHolidayAction(holiday.date, 'opt')}
+                      onCancelClick={() => handleHolidayAction(holiday.date, 'cancel')}
+                    />
+
+
                   ))}
               </View>
             )

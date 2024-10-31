@@ -9,6 +9,7 @@ const TextArea = styled.TextInput`
   text-align-vertical: top;
   border-radius: 8px;
   font-size: 16px;
+  width: 100%;
 `;
 
 const Label = styled.Text`

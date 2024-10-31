@@ -35,7 +35,7 @@ const AddClaim = () => {
   const navigation = useNavigation();
   const router = useRouter();
 
-  console.log("Project List--",projectList)
+  // console.log("Project List--",projectList)
   useLayoutEffect(() => {
     navigation.setOptions({
       headerShown: false,

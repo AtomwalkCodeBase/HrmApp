@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Text, Modal, Alert } from 'react-native';
 import styled from 'styled-components/native';
 import { postEmpLeave } from '../services/productServices';
+import RemarksInput from '../components/RemarkInput'; // Import your custom RemarksInput component
 
 // Styled Components
 const ModalContainer = styled.View`
@@ -58,17 +59,6 @@ const DateText = styled.Text`
   color: black;
 `;
 
-const RemarksInput = styled.TextInput`
-  background-color: white;
-  padding: 10px;
-  border-radius: 8px;
-  border-width: 1px;
-  border-color: #d3d3d3;
-  margin-bottom: 20px;
-  width: 100%;
-  text-align-vertical: top;
-`;
-
 const ActionButton = styled.TouchableOpacity`
   background-color: ${(props) => (props.actionType === 'REJECT' || props.actionType === 'CANCEL' ? 'red' : 'green')};
   padding: 10px;
@@ -84,8 +74,9 @@ const ButtonText = styled.Text`
 `;
 
 const LeaveActionModal = ({ isVisible, leave, onClose, actionType }) => {
-  const [remarks, setRemarks] = useState(leave.remarks);
-  
+  const [remarks, setRemarks] = useState('');
+  const [error, setError] = useState(null);
+
   const actionMessages = {
     APPROVE: 'Leave Approved successfully',
     CANCEL: 'Leave Canceled successfully',
@@ -93,6 +84,11 @@ const LeaveActionModal = ({ isVisible, leave, onClose, actionType }) => {
   };
 
   const handleAction = () => {
+    if (!remarks.trim()) {
+      setError('Remarks are required.');
+      return;
+    }
+
     const leavePayload = {
       emp_id: `${leave.emp_data.id}`,
       from_date: leave.from_date,
@@ -103,13 +99,17 @@ const LeaveActionModal = ({ isVisible, leave, onClose, actionType }) => {
       leave_id: `${leave.id}`
     };
 
+    console.log("Selected Leave==", leave);
+
     postEmpLeave(leavePayload)
       .then(() => {
         Alert.alert('Action Completed Successfully', `${actionMessages[actionType]}`);
+        setRemarks('');
+        setError(null);
         onClose();
       })
       .catch((error) => {
-        Alert.alert('Action Failed',`Failed to ${actionType.toLowerCase()} leave: ${error.message}`);
+        Alert.alert('Action Failed', `Failed to ${actionType.toLowerCase()} leave: ${error.message}`);
       });
   };
 
@@ -118,7 +118,7 @@ const LeaveActionModal = ({ isVisible, leave, onClose, actionType }) => {
       <ModalContainer>
         <ModalContent>
           <Header>
-            <TitleText>{actionType} Leave - {leave.emp_data.emp_id}</TitleText>
+            <TitleText>{actionType} Leave - {leave?.emp_data?.emp_id}</TitleText>
             <CloseButton onPress={onClose}>
               <Text style={{ fontSize: 18, fontWeight: 'bold' }}>X</Text>
             </CloseButton>
@@ -127,20 +127,17 @@ const LeaveActionModal = ({ isVisible, leave, onClose, actionType }) => {
           <LabelText>Leave Form:</LabelText>
 
           <InputField disabled>
-            <DateText>{leave.from_date}</DateText>
+            <DateText>{leave?.from_date}</DateText>
           </InputField>
 
           <InputField disabled>
-            <DateText>{leave.to_date}</DateText>
+            <DateText>{leave?.to_date}</DateText>
           </InputField>
 
-          <LabelText>Remarks:</LabelText>
           <RemarksInput
-            placeholder="Enter your remarks"
-            multiline={true}
-            numberOfLines={3}
-            value={remarks}
-            onChangeText={setRemarks}
+            remark={remarks}
+            setRemark={setRemarks}
+            error={error}
           />
 
           <ActionButton actionType={actionType} onPress={handleAction}>

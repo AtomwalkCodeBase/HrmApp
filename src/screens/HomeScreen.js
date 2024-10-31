@@ -36,10 +36,11 @@ const MenuWrapper = styled.View`
 const MenuItem = styled.TouchableOpacity`
   width: 45%;
   height: ${height * 0.12}px;
-  background-color: #dcd6e9;
+  background-color: #F4EBF6;
   padding: ${height * 0.02}px;
   border-radius: 15px;
   margin-bottom: 20px;
+  /* border: 1px solid #333; */
   align-items: center;
   justify-content: center;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
@@ -54,7 +55,7 @@ const MenuIcon = styled.Image`
 const MenuText = styled.Text`
   font-size: ${width * 0.04}px;
   font-weight: bold;
-  color: #333;
+  color: #666;
 `;
 
 const Header = styled.View`

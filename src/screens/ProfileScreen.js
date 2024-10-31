@@ -94,7 +94,7 @@ const ProfileScreen = () => {
   
   const navigation = useNavigation();
   
-  console.log('Profile data--',profile)
+  // console.log('Profile data--',profile)
 
   useEffect(() => {
     // Fetch profile data

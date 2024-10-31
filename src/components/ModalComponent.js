@@ -3,7 +3,7 @@ import { Text, View, Modal, TouchableOpacity } from 'react-native';
 import styled from 'styled-components/native';
 
 const ModalComponent = ({ isVisible, leave, onClose, claim }) => {
-  console.log("Claim Data",claim)
+  // console.log("Claim Data",claim)
   return (
     <Modal visible={isVisible} transparent={true} animationType="slide">
       <ModalContainer>

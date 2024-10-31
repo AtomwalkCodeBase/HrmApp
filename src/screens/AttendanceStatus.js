@@ -163,7 +163,7 @@ const AttendanceStatus = (props) => {
       processAttendanceData(res.data);
     });
     getEmpHoliday(data).then((res) => {
-      console.log('Holiday Data---',res.data)
+      // console.log('Holiday Data---',res.data)
       processHolidayData(res.data);
     });
   };

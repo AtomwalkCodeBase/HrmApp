@@ -21,7 +21,7 @@ const ApplyLeave = (props) => {
   const [fromDate, setFromDate] = useState(new Date());
   const [toDate, setToDate] = useState(new Date());
   const [remarks, setRemarks] = useState('');
-  const [leave_type, setLeave_type] = useState('EL');
+  // const [leave_type, setLeave_type] = useState('EL');
   const [numOfDays, setNumOfDays] = useState(0);
   const [errors, setErrors] = useState({});
   const call_mode = 'ADD';
@@ -50,9 +50,14 @@ const ApplyLeave = (props) => {
     setErrors((prevState) => ({ ...prevState, [input]: error }));
   };
 
-  const validate = () => {
+  const validate = (res) => {
     Keyboard.dismiss();
     let isValid = true;
+    let isEL = res==='EL'
+    let isLP = res==='LP'
+    let isWH = res==='WH'
+
+    // console.log('REsponse=+=+',isEL)
 
     if (!fromDate) {
       handleError('Please select From Date', 'fromDate');
@@ -63,7 +68,7 @@ const ApplyLeave = (props) => {
       handleError('Please select To Date', 'toDate');
       isValid = false;
     } else if (toDate < fromDate) {
-      handleError('To Date should be after From Date', 'toDate');
+      handleError("'To Date' should not be earlier than 'From Date.'", 'toDate');
       isValid = false;
     }
 
@@ -73,28 +78,38 @@ const ApplyLeave = (props) => {
     }
 
     if (isValid) {
-      addLeave();
+      if (isEL) {
+        addLeave(res);
+      }
+      if (isLP) {
+        addLeave(res);
+      }
+      if (isWH) {
+        addLeave(res);
+      }
     }
   };
 
-  const addLeave = () => {
+  const addLeave = (res) => {
     const leavePayload = {
       emp_id: props.id,
       from_date: `${fromDate.getDate().toString().padStart(2, '0')}-${(fromDate.getMonth() + 1).toString().padStart(2, '0')}-${fromDate.getFullYear()}`,
       to_date: `${toDate.getDate().toString().padStart(2, '0')}-${(toDate.getMonth() + 1).toString().padStart(2, '0')}-${toDate.getFullYear()}`,
       remarks,
-      leave_type,
+      leave_type: res,
       call_mode,
     };
 
+    
     postEmpLeave(leavePayload)
-      .then((res) => {
+      .then(() => {
         Alert.alert('Application Submitted', 'Leave applied successfully');
         router.push('leave');
       })
-      .catch((error) => {
-        Alert.alert('Leave Application Failed', 'Failed to apply leave, please check the input fields carefully.');
-      });
+      .catch(() => Alert.alert(
+        'Leave Application Failed',
+        'Please verify the selected dates. Either the dates are already approved or fall on a holiday.'
+      ));      
   };
 
   return (
@@ -118,7 +133,7 @@ const ApplyLeave = (props) => {
           setRemark={setRemarks}
           error={errors.remarks} 
         />
-        <DropdownPicker
+        {/* <DropdownPicker
           label="Type of Leave"
           data={[
             { name: 'Earned Leave', value: 'EL' },
@@ -127,11 +142,23 @@ const ApplyLeave = (props) => {
           ]}
           value={leave_type}
           setValue={setLeave_type}
+        /> */}
+        <SubmitButton
+          label="Apply Leave (EL)"
+          onPress={()=>{validate('EL')}}
+          bgColor={colors.primary}
+          textColor="white"
         />
         <SubmitButton
-          label="Submit Leave"
-          onPress={validate}
-          bgColor={colors.primary}
+          label="Apply WFH"
+          onPress={()=>{validate('WH')}}
+          bgColor={colors.yellow}
+          textColor="white"
+        />
+        <SubmitButton
+          label="Apply LOP"
+          onPress={()=>{validate('LP')}}
+          bgColor={colors.red}
           textColor="white"
         />
       </Container>
