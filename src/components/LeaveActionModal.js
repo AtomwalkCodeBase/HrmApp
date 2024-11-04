@@ -99,7 +99,7 @@ const LeaveActionModal = ({ isVisible, leave, onClose, actionType }) => {
       leave_id: `${leave.id}`
     };
 
-    console.log("Selected Leave==", leave);
+    // console.log("Selected Leave==", leave);
 
     postEmpLeave(leavePayload)
       .then(() => {

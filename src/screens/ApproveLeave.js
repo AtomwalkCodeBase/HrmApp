@@ -42,15 +42,22 @@ const LeaveScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isRejectModalVisible, setRejectModalVisible] = useState(false);
   const [isApproveModalVisible, setApproveModalVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false); // New state for FlatList refreshing
 
   useEffect(() => {
     leaveDetails();
   }, []);
 
+  const handleRefresh = () => {
+    setRefreshing(true); // Show the refresh indicator
+    leaveDetails(); // Refetch data
+  };
+
   const leaveDetails = () => {
     getEmpLeave("A").then((res) => {
       setLeavedata(res.data);
       setFilteredData(res.data);
+      setRefreshing(false); // Hide the refresh indicator after data is fetched
     });
   };
 
@@ -59,7 +66,6 @@ const LeaveScreen = () => {
       headerShown: false,
     });
   }, [navigation]);
-
 
   const handleBackPress = () => {
     router.push('home');
@@ -111,6 +117,8 @@ const LeaveScreen = () => {
           renderItem={renderLeaveItem}
           keyExtractor={(item) => item.id.toString()}
           showsVerticalScrollIndicator={false}
+          refreshing={refreshing} // Attach the refreshing state
+          onRefresh={handleRefresh} // Attach the handleRefresh function
         />
         {selectedLeave && (
           <ModalComponent
@@ -120,24 +128,27 @@ const LeaveScreen = () => {
           />
         )}
         {selectedLeave && (
-      <LeaveActionModal 
-        isVisible={isApproveModalVisible} 
-        leave={selectedLeave} 
-        onClose={() => {setApproveModalVisible(false)}} 
-        actionType="APPROVE" 
-      />
-      )}
-
-      {selectedLeave && (
-        <>
-        <LeaveActionModal 
-        isVisible={isRejectModalVisible} 
-        leave={selectedLeave} 
-        onClose={() => {setRejectModalVisible(false)}} 
-        actionType="REJECT" 
-        />
-      </>
-      )}
+          <LeaveActionModal 
+            isVisible={isApproveModalVisible} 
+            leave={selectedLeave} 
+            onClose={() => { 
+              setApproveModalVisible(false);
+              handleRefresh(); // Refresh after closing
+            }} 
+            actionType="APPROVE" 
+          />
+        )}
+        {selectedLeave && (
+          <LeaveActionModal 
+            isVisible={isRejectModalVisible} 
+            leave={selectedLeave} 
+            onClose={() => { 
+              setRejectModalVisible(false);
+              handleRefresh(); // Refresh after closing
+            }} 
+            actionType="REJECT" 
+          />
+        )}
       </Container>
     </>
   );

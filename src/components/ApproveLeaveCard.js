@@ -26,6 +26,7 @@ const StatusContainer = styled.View`
 const Status = styled.View`
   flex-direction: row;
   align-items: center;
+  justify-content: center;
   background-color: ${props => props.bgColor || 'transparent'};
   padding: 4px 8px;
   border-radius: 8px;
@@ -74,7 +75,7 @@ const ApproveLeaveCard = ({ leave, onPress, onApprove, onReject }) => {
   const getStatusStyles = (status_display) => {
     switch (status_display) {
       case 'Submitted':
-        return { bgColor: '#fff7e6', color: '#FFA800', borderColor: '#FFA800', icon: 'check' };
+        return { bgColor: '#fff7e6', color: '#FFA800', borderColor: '#FFA800' };
       case 'Rejected':
         return { bgColor: '#ffe6e6', color: '#FF0000', borderColor: '#FF0000', icon: 'cancel' };
       case 'Cancelled':

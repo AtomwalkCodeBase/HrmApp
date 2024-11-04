@@ -81,7 +81,7 @@ const ApproveClaimDetails = (props) => {
   const managerData = profile?.emp_data;
 
   const [claimAmount, setClaimAmount] = useState(claim?.expense_amt);
-  const [approveAmount, setApproveAmount] = useState(0);
+  const [approveAmount, setApproveAmount] = useState('');
   const [remarks, setRemarks] = useState(claim?.approval_remarks);
   const [selectedManager, setSelectedManager] = useState('');
   const [eligible, setEligible] = useState(false);
@@ -106,6 +106,7 @@ const ApproveClaimDetails = (props) => {
   const handleBackPress = () => {
     router.push('home');
   };
+
 
   // Parse and calculate dates for claim submission
   const parseDate = (dateString) => {
@@ -141,7 +142,6 @@ const ApproveClaimDetails = (props) => {
 
         // Check if the manager's grade level is lower than the claim grade level
         if (approveGradeLevel > claimGradeLevel) {
-            // console.log('Truebtbfv')
             if (parseFloat(claimAmount) > maxClaimAmount) {
               Alert.alert('Limit Exceeded', 'Claim amount exceeds your approval limit.');
               setEligible(true);
@@ -188,7 +188,7 @@ const ApproveClaimDetails = (props) => {
 
     const claimPayload = {
       approve_by_id: selectedManager,
-      approve_amt: `${claimAmount}`,
+      approve_amt: `${approveAmount}`,
       claim_id: `${claim?.id}`,
       remarks,
       call_mode: res1,
@@ -219,23 +219,28 @@ const ApproveClaimDetails = (props) => {
 
           <FillFieldsContainer>
             {/* Using AmountInput component */}
-            <AmountInput 
+            <AmountInput
               label="Approve Amount :"
-              value={claimAmount}
-              onChangeText={setClaimAmount}
+              claimAmount={approveAmount}
+              setClaimAmount={setApproveAmount}
             />
+
             {/* Using RemarksInput component */}
-            <RemarksInput 
-              value={remarks}
-              onChangeText={setRemarks}
+            <RemarksInput
+              remark={remarks}
+              setRemark={setRemarks}
             />
+
             {eligible && (
               <>
                 <DropdownPicker
                   label="Select Manager"
-                  items={managers.map(manager => ({ label: `${manager.name} [${manager.emp_id}]`, value: manager.id }))}
+                  data={managers.map(data => ({
+                    label: `${data.name} [${data.emp_id}]`, // Combines name and emp_id as the label
+                    value: data.id,  // Uses id as the unique value
+                  }))}
                   value={selectedManager}
-                  onValueChange={setSelectedManager}
+                  setValue={setSelectedManager}
                 />
               </>
             )}

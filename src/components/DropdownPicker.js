@@ -16,19 +16,21 @@ const Label = styled.Text`
 
 const PickerContainer = styled.View`
   border-width: 1px;
+  color: black;
   border-color: #ccc;
   border-radius: 5px;
 `;
 
 const DropdownPicker = ({ error, label, data, value, setValue }) => {
+  
   return (
     <FieldContainer>
       <Label>{label}</Label>
       <PickerContainer>
         <Dropdown
-          data={data.map((item) => ({
-            label: item.name || item.title,  // Adjust based on your data structure
-            value: item.id || item.value,
+          data={(data || []).map((item) => ({
+            label: item.label,
+            value: item.value,
           }))}
           labelField="label"
           valueField="value"
