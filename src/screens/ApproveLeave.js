@@ -9,6 +9,9 @@ import { getEmpLeave } from '../services/productServices';
 import HeaderComponent from '../components/HeaderComponent';
 import LeaveActionModal from '../components/LeaveActionModal';
 import LeaveCard from '../components/ApproveLeaveCard';
+import EmptyMessage from '../components/EmptyMessage';
+import SuccessModal from '../components/SuccessModal';
+import Loader from '../components/old_components/Loader';  // Import the Loader component
 
 const Container = styled.View`
   padding: 16px;
@@ -42,22 +45,27 @@ const LeaveScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isRejectModalVisible, setRejectModalVisible] = useState(false);
   const [isApproveModalVisible, setApproveModalVisible] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false); // Success modal state
   const [refreshing, setRefreshing] = useState(false); // New state for FlatList refreshing
+  const [successMessage, setSuccessMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false); // State for loader visibility
 
   useEffect(() => {
     leaveDetails();
   }, []);
 
   const handleRefresh = () => {
-    setRefreshing(true); // Show the refresh indicator
-    leaveDetails(); // Refetch data
+    setRefreshing(true);
+    leaveDetails();
   };
 
   const leaveDetails = () => {
+    setIsLoading(true); // Show loader while fetching data
     getEmpLeave("A").then((res) => {
       setLeavedata(res.data);
       setFilteredData(res.data);
-      setRefreshing(false); // Hide the refresh indicator after data is fetched
+      setIsLoading(false); // Hide loader after data is fetched
+      setRefreshing(false);
     });
   };
 
@@ -101,7 +109,7 @@ const LeaveScreen = () => {
 
   return (
     <>
-      <HeaderComponent headerTitle="Approve Leaves List" onBackPress={handleBackPress}/>
+      <HeaderComponent headerTitle="Approve Leave List" onBackPress={handleBackPress}/>
       <Container>
         <SearchContainer>
           <MaterialIcons name="search" size={24} color="#888" />
@@ -112,30 +120,30 @@ const LeaveScreen = () => {
             onChangeText={handleSearch}
           />
         </SearchContainer>
+        
+        {/* Display the Loader while data is loading or refreshing */}
+        <Loader visible={isLoading || refreshing} />
+
         <FlatList
           data={filteredData}
           renderItem={renderLeaveItem}
           keyExtractor={(item) => item.id.toString()}
           showsVerticalScrollIndicator={false}
-          refreshing={refreshing} // Attach the refreshing state
-          onRefresh={handleRefresh} // Attach the handleRefresh function
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+          ListEmptyComponent={<EmptyMessage data={`leave`}/>}
         />
-        {selectedLeave && (
-          <ModalComponent
-            isVisible={isModalVisible}
-            leave={selectedLeave}
-            onClose={() => setModalVisible(false)}
-          />
-        )}
         {selectedLeave && (
           <LeaveActionModal 
             isVisible={isApproveModalVisible} 
             leave={selectedLeave} 
             onClose={() => { 
               setApproveModalVisible(false);
-              handleRefresh(); // Refresh after closing
+              handleRefresh();
             }} 
-            actionType="APPROVE" 
+            actionType="APPROVE"
+            setShowSuccessModal={setShowSuccessModal} // Pass setShowSuccessModal
+            setSuccessMessage={setSuccessMessage}
           />
         )}
         {selectedLeave && (
@@ -144,12 +152,21 @@ const LeaveScreen = () => {
             leave={selectedLeave} 
             onClose={() => { 
               setRejectModalVisible(false);
-              handleRefresh(); // Refresh after closing
+              handleRefresh();
             }} 
-            actionType="REJECT" 
+            actionType="REJECT"
+            setShowSuccessModal={setShowSuccessModal} // Pass setShowSuccessModal
+            setSuccessMessage={setSuccessMessage}
           />
         )}
       </Container>
+
+      {/* SuccessModal to display success message */}
+      <SuccessModal
+        visible={showSuccessModal}
+        message={successMessage}
+        onClose={() => setShowSuccessModal(false)}
+      />
     </>
   );
 };

@@ -4,10 +4,10 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { View, TouchableOpacity } from 'react-native';
 
 const ClaimCardContainer = styled.TouchableOpacity`
-  background-color: #e1d7f5;
+  background-color: #F9F5FA;
   border-radius: 12px;
   border-width: 1px;
-  border-color: #ccc;
+  border-color: #B836F2;
   padding: 16px;
   margin-bottom: 12px;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
@@ -18,6 +18,14 @@ const ClaimText = styled.Text`
   color: #333;
   font-weight: 500;
   margin-bottom: 4px;
+`;
+
+const ClaimTextTitle = styled.Text`
+  font-size: 16px;
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 4px;
+  font-weight: bold;
 `;
 
 const ClaimAmountContainer = styled.View`
@@ -56,7 +64,7 @@ const ViewButtonText = styled.Text`
 const ClaimCard = ({ claim, onPress, onViewFile, getStatusText }) => (
   <ClaimCardContainer onPress={() => onPress(claim)}>
     <View>
-      <ClaimText>{claim.claim_id}</ClaimText>
+      <ClaimTextTitle>{claim.claim_id}</ClaimTextTitle>
       <ClaimText>Item Name: {claim.item_name}</ClaimText>
       <ClaimText>Expense Date: {claim.expense_date}</ClaimText>
       <ClaimText>Status: {getStatusText(claim.expense_status)}</ClaimText>

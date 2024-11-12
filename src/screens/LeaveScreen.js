@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FlatList, View, Dimensions } from 'react-native';
+import { FlatList, View, Dimensions, ActivityIndicator } from 'react-native';
 import styled from 'styled-components/native';
 import { useRouter } from "expo-router";
 import { MaterialIcons } from '@expo/vector-icons';
@@ -10,6 +10,9 @@ import LeaveActionModal from '../components/LeaveActionModal';
 import { getProfileInfo } from '../services/authServices';
 import LeaveCardComponent from '../components/LeaveCardComponent';
 import ApplyButton from '../components/ApplyButton';
+import EmptyMessage from '../components/EmptyMessage';
+import SuccessModal from '../components/SuccessModal';
+import Loader from '../components/old_components/Loader';
 
 const screenHeight = Dimensions.get('window').height;
 const responsiveMarginBottom = screenHeight * 0.125;
@@ -63,7 +66,6 @@ const ApplicationList = styled.ScrollView.attrs({
   showsHorizontalScrollIndicator: false,
 })`
   margin-top: 20px;
-  /* margin-bottom: 10px; */
 `;
 
 const ApplyLeaveButton = styled.TouchableOpacity`
@@ -84,9 +86,6 @@ const ButtonText = styled.Text`
   font-weight: 600;
   margin-left: 8px;
 `;
-
-
-
 
 const LeaveText = styled.Text`
   font-size: 16px;
@@ -122,9 +121,12 @@ const LeaveScreen = () => {
   const [randomValue, setRandomValue] = useState(0);
   const [selectedTab, setSelectedTab] = useState('My Leave');
   const [profile, setProfile] = useState({});
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [loading, setLoading] = useState(false); // Loader state
 
   const generateRandomValue = () => {
-    return Math.floor(Math.random() * 100); // Generates a random number between 0 and 99
+    return Math.floor(Math.random() * 100);
   };
 
   useEffect(() => {
@@ -153,16 +155,17 @@ const LeaveScreen = () => {
   }, [selectedTab, randomValue]);
 
   const leaveDetails = () => {
+    setLoading(true); // Set loading to true at the start of data fetching
     getEmpLeave(selectedTab === 'My Leave' ? 'EL' : selectedTab === 'My WFH' ? 'WH' : 'EL')
       .then((res) => {
-        // Filter out cancelled leaves if "My Leave" tab is selected
         const filteredData = selectedTab === 'My Leave'
           ? res.data.filter((leave) => leave.status_display !== 'Cancelled')
           : selectedTab === 'My Cancel Leave'
           ? res.data.filter((leave) => leave.status_display === 'Cancelled')
           : res.data;
         setLeaveData(filteredData);
-      });
+      })
+      .finally(() => setLoading(false)); // Set loading to false after data is fetched
   };
 
   const handleBackPress = () => {
@@ -170,17 +173,15 @@ const LeaveScreen = () => {
   };
 
   const handleRefresh = () => {
-    setRandomValue(randomValue+1);
+    setRandomValue(randomValue + 1);
   };
 
   const handlePress = (leave) => {
     router.push({
       pathname: '/LeaveApply',
-      params: leave,  // Pass leave data as params
+      params: leave,
     });
   };
-
-
 
   const count = leaveData.length;
   const max_leave = profile?.emp_data?.max_no_leave;
@@ -188,13 +189,13 @@ const LeaveScreen = () => {
   const getStatusStyles = (status_display) => {
     switch (status_display) {
       case 'Submitted':
-        return { bgColor: '#fff7e6', color: '#ba5e07', borderColor: '#ffcc80', icon: 'check' };
+        return { bgColor: '#FFC107', color: '#000', borderColor: '#FFC107', icon: 'time-outline' };
       case 'Rejected':
-        return { bgColor: '#ffe6e6', color: '#f50202', borderColor: '#ff6666', icon: 'cancel' };
+        return { bgColor: '#ff2400', color: '#fff', borderColor: '#ff2400', icon: 'cancel' };
       case 'Cancelled':
-        return { bgColor: '#ffe6e6', color: '#fc0b03', borderColor: '#ff6666', icon: 'cancel' };
+        return { bgColor: '#ff2400', color: '#fff', borderColor: '#ff2400', icon: 'cancel' };
       case 'Approved':
-        return { bgColor: '#eaffea', color: '#026b1c', borderColor: '#66cc66', icon: 'check-circle' };
+        return { bgColor: '#28A747', color: '#fff', borderColor: '#28A747', icon: 'check-circle' };
       default:
         return { bgColor: '#fff', color: '#000', borderColor: '#ddd', icon: 'check-circle' };
     }
@@ -226,7 +227,6 @@ const LeaveScreen = () => {
           </LeaveCard>
         </CardRow>
 
-        {/* Tab Section */}
         <TabContainer>
           <TabButton onPress={() => setSelectedTab('My Leave')}>
             {selectedTab === 'My Leave' ? (
@@ -257,23 +257,21 @@ const LeaveScreen = () => {
           </TabButton>
         </TabContainer>
 
-        <ApplicationList>
-
-        
-
-
-        <FlatList
-          data={[...leaveData].reverse()}
-          renderItem={renderLeaveItem}
-          keyExtractor={(item) => item.id.toString()}
-        />
-        </ApplicationList>
+        {loading ? (
+          // <ActivityIndicator size="large" color="#4d88ff" style={{ marginTop: 20 }} />
+          <Loader visible={loading} />
+        ) : (
+          <ApplicationList>
+            <FlatList
+              data={[...leaveData].reverse()}
+              renderItem={renderLeaveItem}
+              keyExtractor={(item) => item.id.toString()}
+              ListEmptyComponent={<EmptyMessage data={`leave`} />}
+            />
+          </ApplicationList>
+        )}
         <ApplyButton onPress={() => handlePress(leaveData && leaveData[0]?.emp_data)} buttonText="Apply Leave" />
 
-
-        {/* <ApplyLeaveButton onPress={() => handlePress(leaveData&&leaveData[0]?.emp_data)}>
-          
-        </ApplyLeaveButton> */}
         {selectedLeave && (
           <ModalComponent
             isVisible={isModalVisible}
@@ -285,10 +283,21 @@ const LeaveScreen = () => {
           <LeaveActionModal
             isVisible={isCancelModalVisible}
             leave={selectedLeave}
-            onClose={() => {setCancelModalVisible(false),handleRefresh()}} 
+            onClose={() => {
+              setCancelModalVisible(false);
+              handleRefresh(); // Trigger refresh after closing the modal
+            }}
             actionType="CANCEL"
+            setShowSuccessModal={setShowSuccessModal}
+            setSuccessMessage={setSuccessMessage}
           />
         )}
+
+        <SuccessModal
+          visible={showSuccessModal}
+          message={successMessage}
+          onClose={() => setShowSuccessModal(false)}
+        />
       </Container>
     </>
   );

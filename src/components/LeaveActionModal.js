@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Text, Modal, Alert } from 'react-native';
+import { Text, Modal } from 'react-native';
 import styled from 'styled-components/native';
 import { postEmpLeave } from '../services/productServices';
 import RemarksInput from '../components/RemarkInput'; // Import your custom RemarksInput component
@@ -73,14 +73,14 @@ const ButtonText = styled.Text`
   font-size: 16px;
 `;
 
-const LeaveActionModal = ({ isVisible, leave, onClose, actionType }) => {
+const LeaveActionModal = ({ isVisible, leave, onClose, actionType, setShowSuccessModal, setSuccessMessage }) => {
   const [remarks, setRemarks] = useState('');
   const [error, setError] = useState(null);
 
   const actionMessages = {
-    APPROVE: 'Leave Approved successfully',
-    CANCEL: 'Leave Canceled successfully',
-    REJECT: 'Leave Rejected successfully',
+    APPROVE: 'Leave approved successfully',
+    CANCEL: 'Leave canceled successfully',
+    REJECT: 'Leave rejected successfully',
   };
 
   const handleAction = () => {
@@ -99,17 +99,17 @@ const LeaveActionModal = ({ isVisible, leave, onClose, actionType }) => {
       leave_id: `${leave.id}`
     };
 
-    // console.log("Selected Leave==", leave);
-
     postEmpLeave(leavePayload)
       .then(() => {
-        Alert.alert('Action Completed Successfully', `${actionMessages[actionType]}`);
+        setSuccessMessage(actionMessages[actionType]); // Set success message based on action
         setRemarks('');
         setError(null);
-        onClose();
+        // setSuccessMessage(actionMessages[actionType]); // Set success message based on action
+        setShowSuccessModal(true); // Show SuccessModal after success
+        onClose(); // Close the action modal
       })
       .catch((error) => {
-        Alert.alert('Action Failed', `Failed to ${actionType.toLowerCase()} leave: ${error.message}`);
+        setError(`Failed to ${actionType.toLowerCase()} leave: ${error.message}`);
       });
   };
 
@@ -118,27 +118,20 @@ const LeaveActionModal = ({ isVisible, leave, onClose, actionType }) => {
       <ModalContainer>
         <ModalContent>
           <Header>
-            <TitleText>{actionType} Leave - {leave?.emp_data?.emp_id}</TitleText>
+            <TitleText>{actionType} LEAVE - {leave?.emp_data?.emp_id}</TitleText>
             <CloseButton onPress={onClose}>
               <Text style={{ fontSize: 18, fontWeight: 'bold' }}>X</Text>
             </CloseButton>
           </Header>
 
           <LabelText>Leave Form:</LabelText>
-
           <InputField disabled>
             <DateText>{leave?.from_date}</DateText>
           </InputField>
-
           <InputField disabled>
             <DateText>{leave?.to_date}</DateText>
           </InputField>
-
-          <RemarksInput
-            remark={remarks}
-            setRemark={setRemarks}
-            error={error}
-          />
+          <RemarksInput remark={remarks} setRemark={setRemarks} error={error} />
 
           <ActionButton actionType={actionType} onPress={handleAction}>
             <ButtonText>{actionType}</ButtonText>

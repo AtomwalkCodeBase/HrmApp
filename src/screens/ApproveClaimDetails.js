@@ -8,6 +8,7 @@ import HeaderComponent from '../components/HeaderComponent';
 import AmountInput from '../components/AmountInput';
 import RemarksInput from '../components/RemarkInput';
 import DropdownPicker from '../components/DropdownPicker';
+import SuccessModal from '../components/SuccessModal'; // Import SuccessModal component
 
 const Container = styled.View`
   flex: 1;
@@ -57,8 +58,9 @@ const ButtonText = styled.Text`
 
 const ApproveClaimDetails = (props) => {
   const [profile, setProfile] = useState({});
+  const [showSuccessModal, setShowSuccessModal] = useState(false); // State to control SuccessModal visibility
+
   let claim;
-  
   const claimData = props?.claim_data;
   if (claimData) {
     const claimDetails = claimData.claimDetails;
@@ -86,8 +88,10 @@ const ApproveClaimDetails = (props) => {
   const [selectedManager, setSelectedManager] = useState('');
   const [eligible, setEligible] = useState(false);
   const [managers, setManagers] = useState([]);
+  const [claimAmt, setClaimAmt] = useState('');
   const [claimGradeLevel, setClaimGradeLevel] = useState(0);
-  
+  const [errors, setErrors] = useState({});
+
   useEffect(() => {
     getProfileInfo().then((res) => {
       setProfile(res.data);
@@ -104,7 +108,7 @@ const ApproveClaimDetails = (props) => {
   }, [navigation]);
 
   const handleBackPress = () => {
-    router.push('home');
+    router.push('ApproveClaim');
   };
 
 
@@ -158,90 +162,89 @@ const ApproveClaimDetails = (props) => {
 }, [managerData, claimAmount, claimGradeLevel, maxApproveDays]);
 
 
-  const handleAction = (res1) => {
-    if(res1==='APPROVE'){
-      if (approveAmount > parseFloat(claimAmount) ) {
-        Alert.alert('Invalid Submission', 'The approved amount must be less than or equal to the claim amount. Please check your entry and try again.');
-        return;
-      } else {
-      if(eligible){
-        if (approveAmount.trim() === '' || remarks.trim() === '' || !selectedManager) {
-          Alert.alert('Incomplete Submission', 'Please fill in all fields including selecting a manager.');
-          return;
-        }
-      }
-      else{
-        if (approveAmount.trim() === '' || remarks.trim() === '') {
-          Alert.alert('Incomplete Submission', 'Please fill in all fields including selecting a manager.');
-          return;
-        }
-      }
-      
-    }
-    }
-    if (res1==='SEND_BACK') {
-      if (remarks.trim() === '') {
-        Alert.alert('Incomplete Submission', 'Please fill the remark field to send back.');
-        return;
-      }
+const handleAction = (res1) => {
+  let validationErrors = {};
+  
+  if (res1 === 'APPROVE') {
+    if (!approveAmount || approveAmount.trim() === '') {
+      validationErrors.claimAmt = 'Approve amount is required';
+    } else if (parseFloat(approveAmount) > parseFloat(claimAmount)) {
+      validationErrors.claimAmt = 'The approved amount must be less than or equal to the claim amount';
     }
 
-    const claimPayload = {
-      approve_by_id: selectedManager,
-      approve_amt: `${approveAmount}`,
-      claim_id: `${claim?.id}`,
-      remarks,
-      call_mode: res1,
-    };
-    postClaimAction(claimPayload)
-      .then((res) => {
-        Alert.alert('Claim Status Update', `Claim action updated.`);
-        router.push('ApproveClaim');
-      })
-      .catch((error) => {
-        Alert.alert('Leave Action Failed', `Failed to ${res1} leave.`);
-      });
+    if (remarks.trim() === '') {
+      validationErrors.remarks = 'Remarks are required';
+    }
+
+    if (eligible && !selectedManager) {
+      validationErrors.selectedManager = 'Please select a manager';
+    }
+  }
+
+  if (res1 === 'SEND_BACK' && remarks.trim() === '') {
+    validationErrors.remarks = 'Remarks are required to send back';
+  }
+
+  if (Object.keys(validationErrors).length > 0) {
+    setErrors(validationErrors);
+    return; // Stop the function if there are validation errors
+  }
+
+  const claimPayload = {
+    approve_by_id: selectedManager,
+    approve_amt: `${approveAmount}`,
+    claim_id: `${claim?.id}`,
+    remarks,
+    call_mode: res1,
   };
+
+  postClaimAction(claimPayload)
+    .then((res) => {
+      setShowSuccessModal(true); // Show SuccessModal on successful action
+    })
+    .catch((error) => {
+      Alert.alert('Action Failed', `Failed to ${res1} claim.`);
+    });
+};
 
   return (
     <>
-      <HeaderComponent headerTitle={"Approve"+" "+`(${claim?.claim_id})`} onBackPress={handleBackPress} />
+      <HeaderComponent headerTitle={"Approve" + " " + `(${claim?.claim_id})`} onBackPress={handleBackPress} />
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <Container>
-        <ClaimDetailContainer>
-        <ClaimDetailText>Expense Item: {claim?.item_name}</ClaimDetailText>
-        <ClaimDetailText>Expense Date: {claim?.expense_date}</ClaimDetailText>
-        <ClaimDetailText>Emp: {claim?.employee_name}</ClaimDetailText>
-        <ClaimDetailText>Claim Amount: {claim?.expense_amt}</ClaimDetailText>
-        {/* <ClaimDetailText color="#ff8c00">Claim Id: {claim?.claim_id}</ClaimDetailText> */}
-        <ClaimDetailText>Claim Remark: {claim?.remarks}</ClaimDetailText>
-      </ClaimDetailContainer>
+          <ClaimDetailContainer>
+            <ClaimDetailText>Expense Item: {claim?.item_name}</ClaimDetailText>
+            <ClaimDetailText>Expense Date: {claim?.expense_date}</ClaimDetailText>
+            <ClaimDetailText>Emp: {claim?.employee_name}</ClaimDetailText>
+            <ClaimDetailText>Claim Amount: {claim?.expense_amt}</ClaimDetailText>
+            <ClaimDetailText>Claim Remark: {claim?.remarks}</ClaimDetailText>
+          </ClaimDetailContainer>
 
           <FillFieldsContainer>
-            {/* Using AmountInput component */}
-            <AmountInput
-              label="Approve Amount :"
-              claimAmount={approveAmount}
-              setClaimAmount={setApproveAmount}
-            />
-
-            {/* Using RemarksInput component */}
+          <AmountInput
+            label="Approve Amount:"
+            claimAmount={approveAmount}
+            setClaimAmount={setApproveAmount}
+            error={errors.claimAmt} // Updated to use errors.claimAmt for the claim amount error
+          />
             <RemarksInput
               remark={remarks}
               setRemark={setRemarks}
+              error={errors.remarks}
             />
-
             {eligible && (
               <>
-                <DropdownPicker
-                  label="Select Manager"
-                  data={managers.map(data => ({
-                    label: `${data.name} [${data.emp_id}]`, // Combines name and emp_id as the label
-                    value: data.id,  // Uses id as the unique value
-                  }))}
-                  value={selectedManager}
-                  setValue={setSelectedManager}
-                />
+              <DropdownPicker
+                label="Select Manager"
+                data={managers.map(data => ({
+                  label: `${data.name} [${data.emp_id}]`,
+                  value: data.id,
+                }))}
+                value={selectedManager}
+                setValue={setSelectedManager}
+                error={errors.selectedManager}
+
+              />
               </>
             )}
           </FillFieldsContainer>
@@ -263,6 +266,18 @@ const ApproveClaimDetails = (props) => {
           </ButtonContainer>
         </Container>
       </ScrollView>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <SuccessModal
+          isVisible={showSuccessModal}
+          onClose={() => {
+            setShowSuccessModal(false);
+            router.push('ApproveClaim'); // Navigate back after modal closes
+          }}
+          message="Claim action updated successfully."
+        />
+      )}
     </>
   );
 };

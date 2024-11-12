@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useLayoutEffect, useEffect } from 'react';
-import { Alert, Keyboard, SafeAreaView } from 'react-native';
+import { Keyboard, SafeAreaView } from 'react-native';
 import { useNavigation, useRouter } from 'expo-router';
 import { postEmpLeave } from '../services/productServices';
 import HeaderComponent from './HeaderComponent';
@@ -7,7 +7,9 @@ import DatePicker from '../components/DatePicker';
 import RemarksTextArea from '../components/RemarkInput';
 import DropdownPicker from '../components/DropdownPicker';
 import SubmitButton from '../components/SubmitButton';
+import SuccessModal from '../components/SuccessModal'; // Import the SuccessModal component
 import styled from 'styled-components/native';
+import { getProfileInfo } from '../services/authServices';
 import { colors } from '../Styles/appStyle';
 
 const Container = styled.ScrollView`
@@ -21,14 +23,20 @@ const ApplyLeave = (props) => {
   const [fromDate, setFromDate] = useState(new Date());
   const [toDate, setToDate] = useState(new Date());
   const [remarks, setRemarks] = useState('');
-  // const [leave_type, setLeave_type] = useState('EL');
   const [numOfDays, setNumOfDays] = useState(0);
   const [errors, setErrors] = useState({});
+  const [profile, setProfile] = useState({});
+  const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false); // State to control SuccessModal visibility
   const call_mode = 'ADD';
   
-  // console.log("Employee ===++",props)
   const navigation = useNavigation();
   const router = useRouter();
+
+  useEffect(() => {
+    getProfileInfo().then((res) => {
+      setProfile(res.data);
+    });
+  }, []);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -53,11 +61,9 @@ const ApplyLeave = (props) => {
   const validate = (res) => {
     Keyboard.dismiss();
     let isValid = true;
-    let isEL = res==='EL'
-    let isLP = res==='LP'
-    let isWH = res==='WH'
-
-    // console.log('REsponse=+=+',isEL)
+    let isEL = res === 'EL';
+    let isLP = res === 'LP';
+    let isWH = res === 'WH';
 
     if (!fromDate) {
       handleError('Please select From Date', 'fromDate');
@@ -78,21 +84,13 @@ const ApplyLeave = (props) => {
     }
 
     if (isValid) {
-      if (isEL) {
-        addLeave(res);
-      }
-      if (isLP) {
-        addLeave(res);
-      }
-      if (isWH) {
-        addLeave(res);
-      }
+      addLeave(res);
     }
   };
 
   const addLeave = (res) => {
     const leavePayload = {
-      emp_id: props.id,
+      emp_id: `${props.id || profile?.emp_data?.id}`,
       from_date: `${fromDate.getDate().toString().padStart(2, '0')}-${(fromDate.getMonth() + 1).toString().padStart(2, '0')}-${fromDate.getFullYear()}`,
       to_date: `${toDate.getDate().toString().padStart(2, '0')}-${(toDate.getMonth() + 1).toString().padStart(2, '0')}-${toDate.getFullYear()}`,
       remarks,
@@ -100,16 +98,16 @@ const ApplyLeave = (props) => {
       call_mode,
     };
 
-    
     postEmpLeave(leavePayload)
       .then(() => {
-        Alert.alert('Application Submitted', 'Leave applied successfully');
-        router.push('leave');
+        setIsSuccessModalVisible(true); // Show success modal on successful submission
       })
-      .catch(() => Alert.alert(
-        'Leave Application Failed',
-        'Please verify the selected dates. Either the dates are already approved or fall on a holiday.'
-      ));      
+      .catch(() => {
+        Alert.alert(
+          'Leave Application Failed',
+          'Please verify the selected dates. Either the dates are already approved or fall on a holiday.'
+        );
+      });
   };
 
   return (
@@ -133,35 +131,34 @@ const ApplyLeave = (props) => {
           setRemark={setRemarks}
           error={errors.remarks} 
         />
-        {/* <DropdownPicker
-          label="Type of Leave"
-          data={[
-            { name: 'Earned Leave', value: 'EL' },
-            { name: 'Loss of Pay', value: 'LP' },
-            { name: 'Work From Home', value: 'WH' },
-          ]}
-          value={leave_type}
-          setValue={setLeave_type}
-        /> */}
         <SubmitButton
           label="Apply Leave (EL)"
-          onPress={()=>{validate('EL')}}
+          onPress={() => { validate('EL'); }}
           bgColor={colors.primary}
           textColor="white"
         />
         <SubmitButton
           label="Apply WFH"
-          onPress={()=>{validate('WH')}}
+          onPress={() => { validate('WH'); }}
           bgColor={colors.yellow}
           textColor="white"
         />
         <SubmitButton
           label="Apply LOP"
-          onPress={()=>{validate('LP')}}
+          onPress={() => { validate('LP'); }}
           bgColor={colors.red}
           textColor="white"
         />
       </Container>
+      
+      {/* Success Modal */}
+      <SuccessModal 
+        visible={isSuccessModalVisible} 
+        onClose={() => {
+          setIsSuccessModalVisible(false); // Hide modal on close
+          router.push('leave'); // Navigate back to leave page
+        }} 
+      />
     </SafeAreaView>
   );
 };

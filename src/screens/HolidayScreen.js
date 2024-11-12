@@ -1,11 +1,15 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react';
-import { View, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, ScrollView, TouchableOpacity, Alert, Text } from 'react-native';
 import styled from 'styled-components/native';
 import { getEmpHoliday, postEmpLeave } from '../services/productServices';
 import { useNavigation, useRouter } from 'expo-router';
 import HeaderComponent from '../components/HeaderComponent';
 import HolidayCard from '../components/HolidayCard';
 import { getProfileInfo } from '../services/authServices';
+import EmptyMessage from '../components/EmptyMessage';
+import Loader from '../components/old_components/Loader'; // Import the Loader component
+import SuccessModal from '../components/SuccessModal';
+import ErrorModal from '../components/ErrorModal';
 
 const monthNameMap = {
   'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4,
@@ -24,6 +28,11 @@ const Container = styled.View`
   padding: 16px;
   background-color: #fff;
 `;
+
+const HolidayList = styled.ScrollView.attrs({
+  showsVerticalScrollIndicator: false,
+  showsHorizontalScrollIndicator: false,
+})``;
 
 const CardRow = styled.View`
   flex-direction: row;
@@ -48,7 +57,6 @@ const TabText = styled.Text`
   color: ${({ active }) => (active ? '#FFF' : '#000')};
   font-weight: bold;
 `;
-
 
 const LeaveCard = styled.TouchableOpacity`
   width: 95%;
@@ -85,11 +93,15 @@ const HolidayScreen = () => {
   const [holidaydata, setHolidaydata] = useState({});
   const [activeTab, setActiveTab] = useState('Company Holiday');
   const [profile, setProfile] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false); // Modal visibility state
+  const [successMessage, setSuccessMessage] = useState(''); // Success message state
+  const [errorModalVisible, setErrorModalVisible] = useState(false); // Error modal visibility state
+  const [errorMessage, setErrorMessage] = useState('');
   const navigation = useNavigation();
   const currentYear = new Date().getFullYear();
 
   const router = useRouter();
-
 
   useLayoutEffect(() => {
     navigation.setOptions({ headerShown: false });
@@ -102,9 +114,13 @@ const HolidayScreen = () => {
   }, [currentYear]);
 
   const fetchAttendanceDetails = data => {
+    setIsLoading(true);
     getEmpHoliday(data).then(res => {
       processHolidayData(res.data);
       setHolidaydata(res.data);
+      setIsLoading(false);
+    }).catch(() => {
+      setIsLoading(false);
     });
   };
 
@@ -115,7 +131,7 @@ const HolidayScreen = () => {
   const processHolidayData = data => {
     const holidayMap = {};
     for (let i = 0; i < 12; i++) holidayMap[i] = [];
-  
+
     if (data.h_list && Array.isArray(data.h_list)) {
       data.h_list.forEach(holiday => {
         const { day, h_type, remarks, is_opted } = holiday;
@@ -124,36 +140,35 @@ const HolidayScreen = () => {
         if (month !== undefined && parseInt(year, 10) === currentYear) {
           const dateObj = new Date(year, month, dayNum);
           const weekday = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
-  
+
           holidayMap[month].push({
             name: remarks,
             date: day,
-            weekday: weekday, // Add weekday here
+            weekday: weekday,
             type: h_type === 'O' ? 'Optional' : 'Mandatory',
             is_opted: is_opted || false,
           });
         }
       });
     }
-  
-  
+
     setHolidays(holidayMap);
   };
-  
 
   const handleHolidayAction = (date, actionType) => {
     const [day, monthName, year] = date.split('-');
     const month = monthNameMap[monthName];
     const holidayDate = new Date(year, month, day);
     const currentDate = new Date();
-  
+
     if (actionType === 'cancel' && currentDate >= holidayDate) {
-      Alert.alert("Cancellation Not Allowed", "You cannot cancel a holiday that has already passed.");
+      setErrorMessage("You cannot cancel a holiday that has already passed.");
+      setErrorModalVisible(true); // Show ErrorModal if attempting to cancel a past holiday
       return;
     }
-  
+
     const formattedDate = `${day.padStart(2, '0')}-${(month + 1).toString().padStart(2, '0')}-${year}`;
-  
+
     const leavePayload = {
       emp_id: `${profile?.emp_data?.id}`,
       from_date: formattedDate,
@@ -162,17 +177,14 @@ const HolidayScreen = () => {
       leave_type: 'OH',
       call_mode: actionType === 'opt' ? 'ADD' : 'CANCEL',
     };
-  
-    // If canceling, add a placeholder leave_id (to be replaced as needed).
+
     if (actionType === 'cancel') leavePayload.leave_id = '999999999';
-  
+
     postEmpLeave(leavePayload)
       .then(() => {
-        Alert.alert(
-          `Holiday ${actionType === 'opt' ? 'Applied' : 'Canceled'}`,
-          `Holiday ${actionType === 'opt' ? 'applied successfully' : 'canceled successfully'}`
-        );
-        router.push({ pathname: 'HolidayList' });
+        setSuccessMessage(`Holiday ${actionType === 'opt' ? 'applied successfully' : 'canceled successfully'}`);
+        setModalVisible(true); // Show success modal
+        // router.push({ pathname: 'HolidayList' });
       })
       .catch(() => {
         Alert.alert(
@@ -181,12 +193,15 @@ const HolidayScreen = () => {
         );
       });
   };
-    
+
+  const filteredHolidays = Object.entries(holidays).filter(([monthIndex, monthHolidays]) =>
+    monthHolidays.some(holiday => activeTab === 'Company Holiday' ? holiday.type === 'Mandatory' : holiday.type === 'Optional')
+  );
+
   return (
     <>
       <HeaderComponent headerTitle="Holiday List" onBackPress={handleBackPress} />
       <Container>
-        {/* Render max optional holidays card and tabs */}
         <CardRow>
           <LeaveCard bgColor="#e6ecff" borderColor="#4d88ff">
             <LeaveNumber color="#4d88ff">Max Optional Holiday : {holidaydata?.no_optional_holidays}</LeaveNumber>
@@ -202,30 +217,50 @@ const HolidayScreen = () => {
           </Tab>
         </TabContainer>
 
-        <ScrollView>
-          {Object.entries(holidays).map(([monthIndex, monthHolidays]) => (
-            monthHolidays.filter(holiday => activeTab === 'Company Holiday' ? holiday.type === 'Mandatory' : holiday.type === 'Optional').length > 0 && (
-              <View key={monthIndex}>
-                <HolidayInfo>
-                  <HolidayName>{Object.keys(monthFullNameMap)[monthIndex]}</HolidayName>
-                </HolidayInfo>
-                {monthHolidays
-                  .filter(holiday => activeTab === 'Company Holiday' ? holiday.type === 'Mandatory' : holiday.type === 'Optional')
-                  .map((holiday, index) => (
-                    <HolidayCard
-                      data={index}
-                      holiday={holiday}
-                      onOptClick={() => handleHolidayAction(holiday.date, 'opt')}
-                      onCancelClick={() => handleHolidayAction(holiday.date, 'cancel')}
-                    />
-
-
-                  ))}
-              </View>
-            )
-          ))}
-        </ScrollView>
+        {isLoading ? (
+          <Loader visible={isLoading} />
+        ) : (
+          <HolidayList>
+            {filteredHolidays.length > 0 ? (
+              filteredHolidays.map(([monthIndex, monthHolidays]) => (
+                <View key={monthIndex}>
+                  <HolidayInfo>
+                    <HolidayName>{Object.keys(monthFullNameMap)[monthIndex]}</HolidayName>
+                  </HolidayInfo>
+                  {monthHolidays
+                    .filter(holiday => activeTab === 'Company Holiday' ? holiday.type === 'Mandatory' : holiday.type === 'Optional')
+                    .map((holiday, index) => (
+                      <HolidayCard
+                        key={index}
+                        holiday={holiday}
+                        onOptClick={() => handleHolidayAction(holiday.date, 'opt')}
+                        onCancelClick={() => handleHolidayAction(holiday.date, 'cancel')}
+                      />
+                    ))}
+                </View>
+              ))
+            ) : (
+              <EmptyMessage data={`holiday`}/>
+            )}
+          </HolidayList>
+        )}
       </Container>
+
+      <SuccessModal 
+        visible={modalVisible} 
+        message={successMessage} 
+        
+        onClose={() => {
+          setModalVisible(false);
+          router.push({ pathname: 'HolidayList' }); // Navigate back after modal closes
+        }} 
+      />
+      {/* Error Modal */}
+      <ErrorModal 
+        visible={errorModalVisible} 
+        message={errorMessage} 
+        onClose={() => setErrorModalVisible(false)} 
+      />
     </>
   );
 };

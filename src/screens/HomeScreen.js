@@ -81,7 +81,7 @@ const LogoContainer = styled.View`
   height: ${width * 0.25}px;  /* Responsive height */
   display: flex;
   justify-content: center;
-  background-color: aliceblue;
+  background-color: #FFFFFF;
   margin-bottom: 20px;
   align-items: center;
   border-radius: ${width * 0.35}px;  /* Circular container */
@@ -89,7 +89,7 @@ const LogoContainer = styled.View`
 `;
 
 const Logo = styled.Image.attrs(() => ({
-  resizeMode: 'cover',  // Cover ensures the image fills the container
+  resizeMode: 'contain',  // Cover ensures the image fills the container
 }))`
   width: 95%;
   height: 95%;
@@ -238,7 +238,7 @@ const HomePage = () => {
         { isManager&&
         <MenuItem onPress={() => handlePressALeave()}>
         <Image source={require('../../assets/images/ALeave.png')} style={{ width: 50, height: 50 }} />
-          <MenuText>Approve Leaves</MenuText>
+          <MenuText>Approve Leave</MenuText>
         </MenuItem>
         }
 

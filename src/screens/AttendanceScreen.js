@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useLayoutEffect, useCallback } from 'react';
-import { View, Text, Image, Alert } from 'react-native';
+import { View, Text, Image, Alert, Modal, TouchableOpacity } from 'react-native';
 import styled from 'styled-components/native';
 import moment from 'moment';
 import * as Location from 'expo-location';
@@ -8,9 +8,11 @@ import { useFocusEffect } from '@react-navigation/native';
 import Entypo from '@expo/vector-icons/Entypo';
 import Feather from '@expo/vector-icons/Feather';
 import { getProfileInfo } from '../services/authServices';
-import RemarksTextArea from '../components/RemarkInput';
+import RemarksInput from '../components/RemarkInput';
 import HeaderComponent from './HeaderComponent';
 import { getEmpAttendance, postCheckIn } from '../services/productServices';
+import Loader from '../components/old_components/Loader';  // Assuming you have a Loader component
+import SuccessModal from '../components/SuccessModal';
 
 const Container = styled.View`
   flex: 1;
@@ -26,6 +28,13 @@ const Label = styled.Text`
 const AttendanceButton = styled.View`
   flex-direction: row;
   justify-content: space-evenly;
+`;
+
+const AttendanceCard = styled.View`
+  border: 1px solid #007bff;
+  padding: 20px;
+  border-radius: 10px;
+  margin-top: 20px;
 `;
 
 const Button = styled.TouchableOpacity`
@@ -44,6 +53,35 @@ const ButtonText = styled.Text`
 `;
 
 const CheckStatusButton = styled.TouchableOpacity`
+  background-color: #007bff;
+  padding: 10px;
+  margin-top: 20px;
+  border-radius: 10px;
+  align-items: center;
+`;
+
+const CheckStatusText = styled.Text`
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+`;
+
+const RemarkModalContainer = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5);
+`;
+
+const RemarkModalContent = styled.View`
+  width: 80%;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 10px;
+  align-items: center;
+`;
+
+const RemarkModalButton = styled.TouchableOpacity`
   background-color: #007bff;
   padding: 10px;
   margin-top: 20px;
@@ -71,27 +109,6 @@ const Value = styled.Text`
   margin-bottom: 10px;
 `;
 
-const AttendanceCard = styled.View`
-  border: 1px solid #007bff;
-  padding: 20px;
-  border-radius: 10px;
-  margin-top: 20px;
-`;
-
-const CheckStatusText = styled.Text`
-  color: white;
-  font-size: 16px;
-  font-weight: bold;
-`;
-
-const RemarkInput = styled.TextInput`
-  border: 1px solid #ccc;
-  padding: 10px;
-  margin-top: 10px;
-  border-radius: 10px;
-  font-size: 16px;
-`;
-
 const AddAttendance = () => {
   const [currentDate, setCurrentDate] = useState('');
   const [currentTime, setCurrentTime] = useState('');
@@ -101,12 +118,14 @@ const AddAttendance = () => {
     empId: 'Employee_Id',
     designation: 'Position',
   });
-  const [hasPermission, setHasPermission] = useState(null);
   const [checkedIn, setCheckedIn] = useState(false);
   const [startTime, setStartTime] = useState(null);
   const [remark, setRemark] = useState('');
   const [errors, setErrors] = useState({});
   const [refreshKey, setRefreshKey] = useState(0);
+  const [isRemarkModalVisible, setIsRemarkModalVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false); // State for SuccessModal
 
   const navigation = useNavigation();
   const router = useRouter();
@@ -120,7 +139,7 @@ const AddAttendance = () => {
   useEffect(() => {
     const date = moment().format('DD-MM-YYYY');
     let time = moment().format('hh:mm A');
-  
+
     if (moment().isBetween(moment().startOf('day').add(12, 'hours').add(1, 'minute'), moment().startOf('day').add(13, 'hours'))) {
       time = time.replace(/^12/, '00');
     }
@@ -130,6 +149,7 @@ const AddAttendance = () => {
 
     getProfileInfo().then((res) => {
       setEmployeeData(res.data);
+      setIsLoading(false); // Set loading false when data is fetched
     });
   }, [refreshKey]);
 
@@ -145,9 +165,11 @@ const AddAttendance = () => {
   );
 
   const fetchAttendanceDetails = (data) => {
+    setIsLoading(true); // Set loading true while fetching data
     getEmpAttendance(data).then((res) => {
       setAttData(res.data);
       processAttendanceData(res.data);
+      setIsLoading(false); // Set loading false when data is fetched
     });
   };
 
@@ -177,10 +199,8 @@ const AddAttendance = () => {
     }
 
     if (data === 'UPDATE' && !remark) {
-      if (!remark) {
-        handleError('Please fill the remark field', 'remarks');
-        return;
-      }
+      setIsRemarkModalVisible(true);
+      return;
     }
 
     const location = await Location.getCurrentPositionAsync({});
@@ -200,103 +220,129 @@ const AddAttendance = () => {
     };
 
     postCheckIn(checkPayload)
-      .then((res) => {
-        Alert.alert('Action Successful', 'Action successfully completed.');
+      .then(() => {
         setCheckedIn(data === 'ADD');
         setStartTime(currentTime);
         setRefreshKey((prevKey) => prevKey + 1);
+        setIsSuccessModalVisible(true); // Show SuccessModal instead of alert
         if (data === 'UPDATE') setRemark('');
       })
-      .catch((error) => {
+      .catch(() => {
         Alert.alert('Check Failure', 'Failed to Check.');
       });
   };
 
-  const handlePressStatus = () => {
-    router.push({
-      pathname: 'AttendanceStatusDisplay',
-      params: employeeData?.emp_data,
-    });
+  const handleRemarkSubmit = () => {
+    if (!remark.trim()) {
+      handleError('Remark cannot be empty', 'remarks');
+    } else {
+      setIsRemarkModalVisible(false);
+      handleCheck('UPDATE');
+    }
+  };
+
+  const closeSuccessModal = () => {
+    setIsSuccessModalVisible(false);
   };
 
   return (
     <>
       <HeaderComponent headerTitle="My Attendance" onBackPress={() => navigation.goBack()} />
       <Container>
-        <Label>Date: {currentDate}</Label>
-        <Label>Time: {currentTime}</Label>
-        <EmpDataContainer>
-          <EmpImageContainer>
-            <Image
-              source={{ uri: `${employeeData?.image}` }}
-              style={{ width: 50, height: 50, borderRadius: 25 }}
-            />
-          </EmpImageContainer>
-          <View>
-            <Value>Emp-Id: {employeeData?.emp_data?.emp_id}</Value>
-            <Value>Designation: {employeeData?.emp_data?.grade_name}</Value>
-          </View>
-        </EmpDataContainer>
-
-        <AttendanceCard>
-          <Text style={{ fontWeight: 'bold', alignItems: 'center', marginBottom: 10 }}>Attendance</Text>
-
-          {attendance && attendance.start_time === null ? (
-            <Text style={{ color: 'red', textAlign: 'center', marginBottom: 10 }}>
-              On Leave or Holiday
-            </Text>
-          ) : (
-            <AttendanceButton>
-              <Button
-                onPress={() => handleCheck('ADD')}
-                checked={checkedIn}
-                type="checkin"
-                disabled={checkedIn || attendance.geo_status === 'O'}
-              >
-                <Entypo
-                  name="location-pin"
-                  size={24}
-                  color={checkedIn || attendance.geo_status === 'O' ? 'white' : 'black'}
-                />
-                <ButtonText disabled={checkedIn || attendance.geo_status === 'O'}>
-                  {checkedIn || attendance.geo_status === 'O' ? `Checked-In at ${attendance.start_time}` : 'CHECK IN'}
-                </ButtonText>
-              </Button>
-              {attendance.start_time && (
-                <Button
-                  onPress={() => handleCheck('UPDATE')}
-                  checked={checkedIn}
-                  type="checkout"
-                  disabled={!checkedIn || (attendance.geo_status !== 'I')}
-                >
-                  <Feather
-                    name="log-out"
-                    size={20}
-                    color={!checkedIn || (attendance.geo_status !== 'I') ? 'white' : 'black'}
-                  />
-                  <ButtonText disabled={!checkedIn || (attendance.geo_status !== 'I')}>
-                    {attendance.geo_status === 'I' ? 'CHECK OUT' : `Checked-Out at ${attendance.end_time}`}
-                  </ButtonText>
-                </Button>
-              )}
-            </AttendanceButton>
-          )}
-        </AttendanceCard>
-
-        {attendance.geo_status === 'I' && (
+        {isLoading ? (
+          <Loader visible={isLoading} />
+        ) : (
           <>
-            <Label>Remarks</Label>
-            <RemarkInput
-              placeholder="Enter Remarks"
-              value={remark}
-              onChangeText={(text) => setRemark(text)}
+            <Label>Date: {currentDate}</Label>
+            <Label>Time: {currentTime}</Label>
+            <EmpDataContainer>
+              <EmpImageContainer>
+                <Image
+                  source={{ uri: `${employeeData?.image}` }}
+                  style={{ width: 50, height: 50, borderRadius: 25 }}
+                />
+              </EmpImageContainer>
+              <View>
+                <Value>Emp-Id: {employeeData?.emp_data?.emp_id}</Value>
+                <Value>Designation: {employeeData?.emp_data?.grade_name}</Value>
+              </View>
+            </EmpDataContainer>
+            <AttendanceCard>
+              <Text style={{ fontWeight: 'bold', alignItems: 'center', marginBottom: 10 }}>Attendance</Text>
+
+              {attendance && attendance.start_time === null ? (
+                <Text style={{ color: 'red', textAlign: 'center', marginBottom: 10 }}>
+                  On Leave or Holiday
+                </Text>
+              ) : (
+                <AttendanceButton>
+                  <Button
+                    onPress={() => handleCheck('ADD')}
+                    checked={checkedIn}
+                    type="checkin"
+                    disabled={checkedIn || attendance.geo_status === 'O'}
+                  >
+                    <Entypo
+                      name="location-pin"
+                      size={24}
+                      color={checkedIn || attendance.geo_status === 'O' ? 'white' : 'black'}
+                    />
+                    <ButtonText disabled={checkedIn || attendance.geo_status === 'O'}>
+                      {checkedIn || attendance.geo_status === 'O'
+                        ? `Checked-In at ${attendance.start_time}`
+                        : 'CHECK IN'}
+                    </ButtonText>
+                  </Button>
+                  {attendance.start_time && (
+                    <Button
+                      onPress={() => setIsRemarkModalVisible(true)}
+                      checked={checkedIn}
+                      type="checkout"
+                      disabled={!checkedIn || attendance.geo_status !== 'I'}
+                    >
+                      <Feather
+                        name="log-out"
+                        size={20}
+                        color={!checkedIn || attendance.geo_status !== 'I' ? 'white' : 'black'}
+                      />
+                      <ButtonText disabled={!checkedIn || attendance.geo_status !== 'I'}>
+                        {attendance.geo_status === 'I'
+                          ? 'CHECK OUT'
+                          : `Checked-Out at ${attendance.end_time}`}
+                      </ButtonText>
+                    </Button>
+                  )}
+                </AttendanceButton>
+              )}
+            </AttendanceCard>
+
+            <Modal transparent={true} visible={isRemarkModalVisible} animationType="slide">
+              <RemarkModalContainer>
+                <RemarkModalContent>
+                  <Text>Enter a remark for check-out:</Text>
+                  <RemarksInput
+                    remark={remark}
+                    setRemark={setRemark}
+                    error={errors.remarks}
+                  />
+                  <RemarkModalButton onPress={handleRemarkSubmit}>
+                    <CheckStatusText>Submit</CheckStatusText>
+                  </RemarkModalButton>
+                </RemarkModalContent>
+              </RemarkModalContainer>
+            </Modal>
+
+            <SuccessModal
+              visible={isSuccessModalVisible}
+              onClose={closeSuccessModal}
+              message="Action successfully completed."
             />
+
+            <CheckStatusButton onPress={() => router.push({ pathname: 'AttendanceStatusDisplay', params: employeeData?.emp_data })}>
+              <CheckStatusText>Check Status</CheckStatusText>
+            </CheckStatusButton>
           </>
         )}
-
-        <CheckStatusButton onPress={handlePressStatus}>
-          <CheckStatusText>Check Status</CheckStatusText>
-        </CheckStatusButton>
       </Container>
     </>
   );

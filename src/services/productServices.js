@@ -41,7 +41,7 @@ export function getEmpLeave(leave_type , emp_id, year) {
     if (claim_type) {
       data['claim_data'] = claim_type;
     }
-    console.log('Data to be sent:', data);
+    // console.log('Data to be sent:', data);
     return authAxiosPost(processClaim, data)
   
   }
@@ -92,6 +92,6 @@ export function getEmpLeave(leave_type , emp_id, year) {
       data['attendance_data'] = checkin_data;
       // data = checkin_data;
     }
-    console.log('Data to be sent:', data);
+    // console.log('Data to be sent:', data);
     return authAxiosPost(empCheckData, data)
   }

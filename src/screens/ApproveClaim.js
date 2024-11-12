@@ -7,10 +7,12 @@ import { getEmpClaim } from '../services/productServices';
 import HeaderComponent from './HeaderComponent';
 import ImageViewer from 'react-native-image-zoom-viewer'; // Import the Image Zoom Viewer
 import ModalComponent from '../components/ModalComponent';
+import EmptyMessage from '../components/EmptyMessage';
+import Loader from '../components/old_components/Loader';
 const Container = styled.View`
   flex: 1;
   padding: 10px;
-  background-color: #f8f9fa;
+  background-color: #fff;
 `;
 
 const ClaimCard = styled.TouchableOpacity`
@@ -114,6 +116,8 @@ const SearchInput = styled.TextInput`
   padding-left: 10px;
 `;
 
+
+
 const ImageViewerContainer = styled.View`
   flex: 1;
   justify-content: center;
@@ -134,6 +138,7 @@ const ApproveClaim = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedImageUrl, setSelectedImageUrl] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation();
   const router = useRouter();
   const requestData = 'APPROVE';
@@ -149,9 +154,13 @@ const ApproveClaim = () => {
   }, []);
 
   const fetchClaimDetails = () => {
+    setIsLoading(true);  // Set loading to true when fetching
     getEmpClaim(requestData).then((res) => {
       setClaimData(res.data);
       setFilteredData(res.data);
+      setIsLoading(false);  // Set loading to false once data is fetched
+    }).catch(() => {
+      setIsLoading(false);  // Ensure loading is turned off even if the request fails
     });
   };
 
@@ -306,14 +315,23 @@ const ApproveClaim = () => {
             onChangeText={handleSearch}
           />
         </SearchContainer>
-        <ApplicationList>
-        <FlatList
+        
+        {isLoading ? (  // Display Loader when data is loading
+          <Loader visible={isLoading} />
+        ) : (
+          <ApplicationList>
+          <FlatList
           data={[...filteredData].reverse()}
           renderItem={renderClaimItem}
           keyExtractor={(item) => item.claim_id.toString()}
           showsVerticalScrollIndicator={false}
+          ListEmptyComponent={<EmptyMessage data={`claim`}/>}
         />
         </ApplicationList>
+        )}
+
+        
+        
       {selectedClaim && (
         <ModalComponent
           isVisible={isModalVisible}

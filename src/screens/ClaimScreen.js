@@ -7,7 +7,9 @@ import ImageViewer from 'react-native-image-zoom-viewer';
 import ModalComponent from '../components/ModalComponent';
 import ClaimCard from '../components/ClaimCard';
 import ApplyButton from '../components/ApplyButton';
+import Loader from '../components/old_components/Loader'; // Import the Loader component
 import styled from 'styled-components/native';
+import EmptyMessage from '../components/EmptyMessage';
 
 const Container = styled.View`
   flex: 1;
@@ -21,6 +23,7 @@ const ClaimScreen = ({ headerTitle = "My Claim", buttonLabel = "Apply Claim", fe
   const [isModalVisible, setModalVisible] = useState(false);
   const [claimData, setClaimData] = useState([]);
   const [selectedImageUrl, setSelectedImageUrl] = useState(null);
+  const [isLoading, setIsLoading] = useState(false); // State to control Loader visibility
   const navigation = useNavigation();
   const requestData = 'GET';
 
@@ -29,8 +32,13 @@ const ClaimScreen = ({ headerTitle = "My Claim", buttonLabel = "Apply Claim", fe
   }, []);
 
   const fetchClaimDetails = () => {
+    setIsLoading(true); // Show loader before fetching
     fetchClaimData(requestData).then((res) => {
       setClaimData(res.data);
+      setIsLoading(false); // Hide loader after data is fetched
+    }).catch((err) => {
+      setIsLoading(false); // Hide loader in case of error
+      console.error("Error fetching claim data:", err);
     });
   };
 
@@ -127,6 +135,7 @@ const ClaimScreen = ({ headerTitle = "My Claim", buttonLabel = "Apply Claim", fe
           keyExtractor={(item) => item.claim_id.toString()}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 100 }}
+          ListEmptyComponent={<EmptyMessage data={`claim`} />}
         />
         <ApplyButton onPress={handlePress} buttonText={buttonLabel} />
         {selectedClaim && (
@@ -137,6 +146,9 @@ const ClaimScreen = ({ headerTitle = "My Claim", buttonLabel = "Apply Claim", fe
           />
         )}
       </Container>
+      
+      {/* Loader Component */}
+      <Loader visible={isLoading} />
     </SafeAreaView>
   );
 };

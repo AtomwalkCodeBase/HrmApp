@@ -30,7 +30,7 @@ export const authAxiosPost = async (url, data) => {
 
 export const authAxiosFilePost = async (url, data) => {
   let token = await AsyncStorage.getItem('userToken');
-  console.log("Data to be sent:", data);
+  // console.log("Data to be sent:", data);
 
   // Check if the data is FormData
   if (!(data instanceof FormData)) {

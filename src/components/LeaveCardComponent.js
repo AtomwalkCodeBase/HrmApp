@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components/native';
 import { View, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 const ApplicationCard = styled.TouchableOpacity`
   background-color: #fff;
@@ -16,21 +17,24 @@ const ApplicationCard = styled.TouchableOpacity`
 const ApplicationStatusContainer = styled.View`
   flex-direction: row;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
 `;
 
 const ApplicationStatus = styled.View`
   flex-direction: row;
   align-items: center;
+  justify-content: center;
   background-color: ${props => props.bgColor || 'transparent'};
   padding: 2px 8px;
-  border-radius: 8px;
+  border-radius: 20px;
 `;
 
 const ApplicationStatusText = styled.Text`
   font-size: 14px;
+  font-weight: bold;
+  padding: 2px;
   color: ${props => props.color || '#000'};
-  margin-left: 8px;
+  /* margin-left: 8px; */
 `;
 
 const DetailText = styled.Text`
@@ -44,18 +48,20 @@ const DetailHighlight = styled.Text`
 `;
 
 const CancelButton = styled.TouchableOpacity`
-  background-color: #ff6666;
+  background-color: #ff2400;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 5px 8px;
-  border-radius: 8px;
+  border-radius: 5px;
   margin-top: 10px;
+  /* border: 1px solid black; */
 `;
 
 const CancelButtonText = styled.Text`
   color: #fff;
   font-size: 14px;
+  font-weight: bold;
 `;
 
 const LeaveCardComponent = ({ leave, statusStyles, onPress, onCancelPress, showCancelButton }) => {
@@ -74,10 +80,15 @@ const LeaveCardComponent = ({ leave, statusStyles, onPress, onCancelPress, showC
           </DetailText>
         </View>
         <View style={{ flexDirection: 'column' }}>
-          <ApplicationStatus bgColor={bgColor}>
-            <ApplicationStatusText color={color}>{leave.status_display}</ApplicationStatusText>
-            <MaterialIcons name={icon} size={24} color={color} />
-          </ApplicationStatus>
+        <ApplicationStatus bgColor={bgColor}>
+          <ApplicationStatusText color={color}>{leave.status_display}</ApplicationStatusText>
+          {/* {icon === 'time-outline' ? (
+            <Ionicons name={icon} size={20} color={color} />
+          ) : (
+            <MaterialIcons name={icon} size={20} color={color} />
+          )} */}
+        </ApplicationStatus>
+
           {showCancelButton && (
             <CancelButton onPress={() => onCancelPress(leave)}>
               <CancelButtonText>Cancel</CancelButtonText>
