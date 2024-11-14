@@ -22,7 +22,7 @@ export function getEmpLeave(leave_type , emp_id, year) {
     if (leave_type) {
       data['leave_data'] = leave_type;
     }
-    console.log('Data to be sent:', data);
+    // console.log('Data to be sent:', data);
     return authAxiosPost(addEmpLeave, data)
   
   }
