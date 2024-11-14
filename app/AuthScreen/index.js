@@ -33,10 +33,18 @@ const LoginScreen = () => {
     return true;
   };
 
+  const handlePressPassword = () => {
+    router.push({
+      pathname: 'ResetPassword' 
+    });
+  };
+
   const handlePress = async () => {
     if (!validateInput()) {
       return;
     }
+
+    
   
     let finalUsername = username;
   
@@ -140,7 +148,7 @@ const LoginScreen = () => {
     </Button>
 
     {/* Forgot Password Text */}
-    <ForgotPasswordText>Forgot password</ForgotPasswordText>
+    <ForgotPasswordText onPress={() => {handlePressPassword()}}>Forgot password</ForgotPasswordText>
 
     {/* Bottom Navigation */}
     <BottomNav>

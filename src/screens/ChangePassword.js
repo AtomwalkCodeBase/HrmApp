@@ -71,7 +71,7 @@ const ResetPasswordScreen = () => {
             This feature is only supported on the ATOMWALK website.
           </Title>
           <Title>
-            Please visit the 'atomwalk.com' to change your password.
+            Please visit the 'atomwalk.com' to change/forget your password.
           </Title>
           {/* <ResetButton onPress={handlePress}>
             <ButtonText>Reset Password</ButtonText>

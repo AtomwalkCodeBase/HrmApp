@@ -42,7 +42,7 @@ const TabButtonActive = styled(TabButton)`
   color: black;
 `;
 
-const LeaveCard = styled.TouchableOpacity`
+const LeaveCard = styled.View`
   width: 95%;
   background-color: ${props => props.bgColor || '#fff'};
   border-radius: 16px;

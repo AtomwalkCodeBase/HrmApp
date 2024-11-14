@@ -33,7 +33,7 @@ const EmptyMessage = (res) => {
       <IconContainer>
         <Image source={require('../../assets/images/Tasks.png')} style={{ width: 120, height: 120 }} />
       </IconContainer>
-      <MessageText>Empty List</MessageText>
+      <MessageText>Nothing to Display</MessageText>
       <SubText>There are no {res.data} data found.</SubText>
       
     </EmptyMessageContainer>

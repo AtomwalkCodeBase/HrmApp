@@ -78,7 +78,7 @@ const RemarkModalContent = styled.View`
   padding: 20px;
   background-color: #fff;
   border-radius: 10px;
-  align-items: center;
+  /* align-items: center; */
 `;
 
 const RemarkModalButton = styled.TouchableOpacity`
@@ -192,21 +192,25 @@ const AddAttendance = () => {
   };
 
   const handleCheck = async (data) => {
+    setIsLoading(true); // Show loader when check-in/check-out action starts
     const { status } = await Location.requestForegroundPermissionsAsync();
+  
     if (status !== 'granted') {
       Alert.alert('Permission denied', 'Location permission is required to check.');
+      setIsLoading(false); // Hide loader if permission is denied
       return;
     }
-
+  
     if (data === 'UPDATE' && !remark) {
+      setIsLoading(false); // Hide loader if opening remark modal
       setIsRemarkModalVisible(true);
       return;
     }
-
+  
     const location = await Location.getCurrentPositionAsync({});
     const todayAttendance = attData.find((item) => item.a_date === currentDate);
     const attendanceId = todayAttendance ? todayAttendance.id : null;
-
+  
     const checkPayload = {
       emp_id: employeeData?.emp_data?.emp_id,
       call_mode: data,
@@ -218,28 +222,32 @@ const AddAttendance = () => {
       remarks: data === 'ADD' ? 'Check-in from Mobile' : remark,
       id: attendanceId,
     };
-
+  
     postCheckIn(checkPayload)
       .then(() => {
         setCheckedIn(data === 'ADD');
         setStartTime(currentTime);
         setRefreshKey((prevKey) => prevKey + 1);
-        setIsSuccessModalVisible(true); // Show SuccessModal instead of alert
+        setIsSuccessModalVisible(true); // Show SuccessModal on success
         if (data === 'UPDATE') setRemark('');
       })
       .catch(() => {
         Alert.alert('Check Failure', 'Failed to Check.');
+      })
+      .finally(() => {
+        setIsLoading(false); // Hide loader after check-in/check-out completes
       });
   };
-
+  
   const handleRemarkSubmit = () => {
     if (!remark.trim()) {
       handleError('Remark cannot be empty', 'remarks');
     } else {
       setIsRemarkModalVisible(false);
-      handleCheck('UPDATE');
+      handleCheck('UPDATE'); // Trigger check-out action
     }
   };
+  
 
   const closeSuccessModal = () => {
     setIsSuccessModalVisible(false);
@@ -319,18 +327,33 @@ const AddAttendance = () => {
             <Modal transparent={true} visible={isRemarkModalVisible} animationType="slide">
               <RemarkModalContainer>
                 <RemarkModalContent>
-                  <Text>Enter a remark for check-out:</Text>
+                  <TouchableOpacity
+                    style={{
+                      position: 'absolute',
+                      top: 10,
+                      right: 10,
+                      zIndex: 1,
+                    }}
+                    onPress={() => setIsRemarkModalVisible(false)}
+                  >
+                    <Entypo name="cross" size={24} color="black" />
+                  </TouchableOpacity>
+
+                  {/* <Text>Enter a remark for check-out:</Text> */}
                   <RemarksInput
                     remark={remark}
                     setRemark={setRemark}
                     error={errors.remarks}
+                    placeholder="Enter a remark for check-out"
                   />
+
                   <RemarkModalButton onPress={handleRemarkSubmit}>
                     <CheckStatusText>Submit</CheckStatusText>
                   </RemarkModalButton>
                 </RemarkModalContent>
               </RemarkModalContainer>
             </Modal>
+
 
             <SuccessModal
               visible={isSuccessModalVisible}

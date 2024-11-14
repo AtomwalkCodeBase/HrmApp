@@ -18,19 +18,19 @@ const Label = styled.Text`
   margin-bottom: 5px;
 `;
 
-const RemarksInput = ({ error, remark, setRemark }) => {
+const RemarksInput = ({ error, remark, setRemark, placeholder = "Remark" }) => {
   return (
     <>
       <Label>Remarks :</Label>
       <TextArea
-        placeholder="Remark"
+        placeholder={placeholder}
         value={remark}
         onChangeText={setRemark}
         multiline
         numberOfLines={4}
       />
       {error && (
-        <Text style={{marginTop: 7, color: colors.red, fontSize: 12}}>
+        <Text style={{ marginTop: 7, color: colors.red, fontSize: 12 }}>
           {error}
         </Text>
       )}

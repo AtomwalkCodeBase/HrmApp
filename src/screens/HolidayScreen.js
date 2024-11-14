@@ -58,7 +58,7 @@ const TabText = styled.Text`
   font-weight: bold;
 `;
 
-const LeaveCard = styled.TouchableOpacity`
+const LeaveCard = styled.View`
   width: 95%;
   background-color: ${props => props.bgColor || '#fff'};
   border-radius: 16px;
@@ -160,15 +160,25 @@ const HolidayScreen = () => {
     const month = monthNameMap[monthName];
     const holidayDate = new Date(year, month, day);
     const currentDate = new Date();
-
+  
+    // Check if the maximum optional holidays have already been opted
+    const optedHolidaysCount = Object.values(holidays).flat().filter(holiday => holiday.is_opted).length;
+    const maxOptionalHolidays = holidaydata?.no_optional_holidays;
+  
+    if (actionType === 'opt' && optedHolidaysCount >= maxOptionalHolidays) {
+      setErrorMessage("Already maximum optional holiday applied");
+      setErrorModalVisible(true); // Show error modal if max optional holidays reached
+      return;
+    }
+  
     if (actionType === 'cancel' && currentDate >= holidayDate) {
       setErrorMessage("You cannot cancel a holiday that has already passed.");
       setErrorModalVisible(true); // Show ErrorModal if attempting to cancel a past holiday
       return;
     }
-
+  
     const formattedDate = `${day.padStart(2, '0')}-${(month + 1).toString().padStart(2, '0')}-${year}`;
-
+  
     const leavePayload = {
       emp_id: `${profile?.emp_data?.id}`,
       from_date: formattedDate,
@@ -177,22 +187,28 @@ const HolidayScreen = () => {
       leave_type: 'OH',
       call_mode: actionType === 'opt' ? 'ADD' : 'CANCEL',
     };
-
+  
     if (actionType === 'cancel') leavePayload.leave_id = '999999999';
-
+  
+    setIsLoading(true); // Set loader when action is initiated
+  
     postEmpLeave(leavePayload)
       .then(() => {
         setSuccessMessage(`Holiday ${actionType === 'opt' ? 'applied successfully' : 'canceled successfully'}`);
         setModalVisible(true); // Show success modal
-        // router.push({ pathname: 'HolidayList' });
       })
       .catch(() => {
         Alert.alert(
           `Holiday ${actionType === 'opt' ? 'Application Failed' : 'Cancellation Failed'}`,
           `Failed to ${actionType === 'opt' ? 'apply' : 'cancel'} the optional holiday.`
         );
+      })
+      .finally(() => {
+        setIsLoading(false); // Reset loader after action completes
       });
   };
+  
+  
 
   const filteredHolidays = Object.entries(holidays).filter(([monthIndex, monthHolidays]) =>
     monthHolidays.some(holiday => activeTab === 'Company Holiday' ? holiday.type === 'Mandatory' : holiday.type === 'Optional')
