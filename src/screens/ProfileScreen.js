@@ -187,7 +187,7 @@ const ProfileScreen = () => {
         </LogOutButton>
 
         <ChangePasswordButton onPress={handlePressPassword} entering={FadeIn.delay(800)}>
-          <ChangePasswordText>Change Your Password</ChangePasswordText>
+          <ChangePasswordText>Set Your Pin</ChangePasswordText>
         </ChangePasswordButton>
       </Container>
     </>

@@ -10,6 +10,7 @@ export default function RootLayout() {
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 
       <Stack.Screen name="AuthScreen/index" options={{headerShown:false}}/> 
+      <Stack.Screen name="PinScreen/index" options={{headerShown:false}}/> 
       <Stack.Screen name="LeaveApply/index" options={{headerShown:false}}/>
       <Stack.Screen name="ClaimApply/index" options={{headerShown:false}}/>
       <Stack.Screen name="ApproveClaim/index" options={{headerShown:false}}/>

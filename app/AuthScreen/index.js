@@ -42,18 +42,14 @@ const LoginScreen = () => {
   const handlePress = async () => {
     if (!validateInput()) {
       return;
-    }
-
-    
-  
+    } 
     let finalUsername = username;
   
     // Check if username contains "@" (assuming it's an email)
     if (!username.includes('@')) {
       try {
         // First API call to get the username if it's not an email
-        const userDetailResponse = await axios.get(`https://www.atomwalk.com/api/get_user_detail/?user_id=${username}`);
-  
+        const userDetailResponse = await axios.get(`https://www.atomwalk.com/api/get_user_detail/?user_id=${username}`);  
         if (userDetailResponse.status === 200) {
           finalUsername = userDetailResponse.data.username;
         } else {
@@ -75,6 +71,8 @@ const LoginScreen = () => {
       });
   
       if (response.status === 200) {
+        AsyncStorage.setItem('Password', password);
+        AsyncStorage.setItem('username', finalUsername);
         getCompanyInfo().then((res) => {
           let comanyInfo = res.data; 
           AsyncStorage.setItem('companyInfo', JSON.stringify(comanyInfo));

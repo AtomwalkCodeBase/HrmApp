@@ -18,8 +18,11 @@ export default function Index() {
       try {
         // Check for token in AsyncStorage
         const userToken = await AsyncStorage.getItem('userToken');
-        
-        if (userToken) {
+        const storedMPIN = await AsyncStorage.getItem('userPin');
+        if(storedMPIN){
+          router.replace('/PinScreen');
+        } 
+        else if (userToken) {
           // If token exists, navigate to HomeScreen
           router.replace('/home');
         } else {

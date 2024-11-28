@@ -58,9 +58,6 @@ const AppProvider = ({ children }) => {
             
             }
         }
-          
-
-
         // console.log(username, loginURL);
         try {
             const res = await publicAxiosRequest.post(loginURL, {
@@ -70,6 +67,8 @@ const AppProvider = ({ children }) => {
             const userToken = res.data['key']
             console.log('After call', res.data, userToken)
             AsyncStorage.setItem('userToken', userToken);
+            AsyncStorage.setItem('Password', password);
+            AsyncStorage.setItem('username', username);
             setUserToken(userToken)
             setError('')
             // console.log('TOKEN', getData())
@@ -93,7 +92,7 @@ const AppProvider = ({ children }) => {
                 AsyncStorage.setItem('dbName', db_name);
                 setCompanyInfo(comanyInfo);
                 setDbName(db_name);
-                // console.log(res.data.db_name, db_name);
+                // console.log(res.data.db_name, db_name);  
                 
             })
             .catch((error) => {
