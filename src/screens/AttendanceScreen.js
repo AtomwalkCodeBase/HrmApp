@@ -201,13 +201,25 @@ const AddAttendance = () => {
       return;
     }
   
-    if (data === 'UPDATE' && !remark) {
-      setIsLoading(false); // Hide loader if opening remark modal
-      setIsRemarkModalVisible(true);
+    let location = null;
+    let retries = 0;
+  
+    // Retry fetching location if not immediately available
+    while (!location && retries < 5) {
+      try {
+        location = await Location.getCurrentPositionAsync({});
+      } catch (error) {
+        retries += 1;
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait for 1 second before retrying
+      }
+    }
+  
+    if (!location) {
+      Alert.alert('Error', 'Unable to fetch location. Please try again.');
+      setIsLoading(false);
       return;
     }
   
-    const location = await Location.getCurrentPositionAsync({});
     const todayAttendance = attData.find((item) => item.a_date === currentDate);
     const attendanceId = todayAttendance ? todayAttendance.id : null;
   
@@ -238,6 +250,7 @@ const AddAttendance = () => {
         setIsLoading(false); // Hide loader after check-in/check-out completes
       });
   };
+  
   
   const handleRemarkSubmit = () => {
     if (!remark.trim()) {
