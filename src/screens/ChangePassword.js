@@ -1,7 +1,8 @@
 import React, {useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Animated, Easing } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useRouter } from "expo-router";
+import {useNavigation, useRouter } from "expo-router";
+import HeaderComponent from './HeaderComponent';
 const ResetPasswordScreen = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -18,6 +19,9 @@ const ResetPasswordScreen = () => {
       fetchUserPin();
   }, []);
   const shakeAnim = new Animated.Value(0); // Animation for shaking error message
+
+  
+  const navigation = useNavigation();
 
   const triggerShake = () => {
     Animated.sequence([
@@ -59,7 +63,11 @@ const ResetPasswordScreen = () => {
   };
 
   return (
+    <>
+    <HeaderComponent headerTitle={`${userPin?"Update Your PIN":"Set Your PIN"}`} onBackPress={() => navigation.goBack()}></HeaderComponent>
+    
     <View style={styles.container}>
+    
       <Text style={styles.title}>{userPin?"Update Your PIN":"Set Your PIN"}</Text>
       <TextInput
         style={styles.input}
@@ -96,6 +104,7 @@ const ResetPasswordScreen = () => {
         <Text style={styles.submitText}>Submit</Text>
       </TouchableOpacity>
     </View>
+    </>
   );
 };
 
