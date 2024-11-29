@@ -52,7 +52,6 @@ const PinPassword = ({modalVisible,setModalVisible}) => {
         if (userToken) {
           // If login is successful, close modal and show success message
           await AsyncStorage.setItem('userPin', newPin);
-          await AsyncStorage.setItem('userPin', newPin);
           await AsyncStorage.setItem('username', userId);
           await AsyncStorage.setItem('Password', password);
           Alert.alert('Success', 'Your new PIN has been set.');

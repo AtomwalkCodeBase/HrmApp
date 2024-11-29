@@ -8,6 +8,7 @@ import { getProfileInfo } from '../services/authServices';
 import HeaderComponent from './HeaderComponent';
 import { useNavigation, useRouter } from 'expo-router';
 import Animated, { FadeIn, FadeOut, SlideInLeft, SlideOutRight } from 'react-native-reanimated';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Styled components
 const Container = styled.View`
@@ -118,7 +119,15 @@ const ProfileScreen = () => {
   const { logout } = useContext(AppContext);
   const [profile, setProfile] = useState({});
   const [isManager, setIsManager] = useState(false);
+  const [userPin, setUserPin] = useState(null);
 
+    useEffect(() => {
+        const fetchUserPin = async () => {
+            const storedPin = await AsyncStorage.getItem('userPin');
+            setUserPin(storedPin); // storedPin will be `null` if no value is found
+        };
+        fetchUserPin();
+    }, []);
   const router = useRouter();
   const navigation = useNavigation();
 
@@ -187,7 +196,7 @@ const ProfileScreen = () => {
         </LogOutButton>
 
         <ChangePasswordButton onPress={handlePressPassword} entering={FadeIn.delay(800)}>
-          <ChangePasswordText>Set Your Pin</ChangePasswordText>
+          <ChangePasswordText>{userPin?"Update Your Pin":"Set Your Pin"}</ChangePasswordText>
         </ChangePasswordButton>
       </Container>
     </>

@@ -7,6 +7,7 @@ import {getCompanyInfo} from '../src/services/authServices'
 import { Alert } from 'react-native'
 import axios from "axios";
 import { useRouter } from 'expo-router';
+
 // import { useRoute } from '@react-navigation/native';
 
 // Create the context
@@ -14,9 +15,8 @@ const AppContext = createContext();
 
 // Create a provider component
 const AppProvider = ({ children }) => {
-  const [state, setState] = useState("datass");
-
-  const [isLoading, setIsLoading] = useState(false);
+    const [state, setState] = useState("datass");
+    const [isLoading, setIsLoading] = useState(false);
     const [userToken, setUserToken] = useState(null);
     const [companyInfo, setCompanyInfo] = useState(null);
     const [dbName, setDbName] = useState(null);
@@ -71,6 +71,7 @@ const AppProvider = ({ children }) => {
             AsyncStorage.setItem('username', username);
             setUserToken(userToken)
             setError('')
+            router.replace({pathname: 'home' });
             // console.log('TOKEN', getData())
         } catch (err) {
             isError = true
@@ -114,7 +115,7 @@ const AppProvider = ({ children }) => {
         setDbName(null);
         setIsLoading(false);
         setError('')
-        router.push('AuthScreen')
+        router.replace('AuthScreen')
     }
 
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components/native';
 import { View, TextInput, TouchableOpacity,Alert } from 'react-native';
 import { MaterialIcons, FontAwesome } from '@expo/vector-icons';
@@ -15,7 +15,15 @@ const LoginScreen = () => {
   const [password, setPassword] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [userPin, setUserPin] = useState(null);
 
+  useEffect(() => {
+      const fetchUserPin = async () => {
+          const storedPin = await AsyncStorage.getItem('userPin');
+          setUserPin(storedPin); // storedPin will be `null` if no value is found
+      };
+      fetchUserPin();
+  }, []);
   const validateInput = () => {
     if (!username) {
       setErrorMessage('Username is required');
@@ -35,7 +43,7 @@ const LoginScreen = () => {
 
   const handlePressPassword = () => {
     router.push({
-      pathname: 'ResetPassword' 
+      pathname: 'PinScreen' 
     });
   };
 
@@ -90,11 +98,11 @@ const LoginScreen = () => {
         // Navigate to the home screen
         router.push('/home');
       } else {
-        setErrorMessage('Invalid E-mail id or Password');
+        setErrorMessage('Invalid User id or Password');
       }
     } catch (error) {
       console.error('API call error:', error);
-      setErrorMessage('Invalid E-mail id or Password');
+      setErrorMessage('Invalid User id or Password');
     }
   };
 
@@ -146,7 +154,7 @@ const LoginScreen = () => {
     </Button>
 
     {/* Forgot Password Text */}
-    <ForgotPasswordText onPress={() => {handlePressPassword()}}>Forgot password</ForgotPasswordText>
+    {userPin&&<ForgotPasswordText onPress={() => {handlePressPassword()}}>Login With Your Pin</ForgotPasswordText>}
 
     {/* Bottom Navigation */}
     <BottomNav>

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useContext, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useRouter } from "expo-router";
 import {
@@ -14,8 +14,10 @@ import * as LocalAuthentication from 'expo-local-authentication';
 import Icon from 'react-native-vector-icons/Ionicons'; // Import Ionicons for the fingerprint icon
 import { useEffect } from 'react';
 import PinPassword from '../../src/screens/PinPassword';
+import { AppContext } from '../../context/AppContext';
 
 const AuthScreen = () => {
+    const {login} = useContext(AppContext);
     const router = useRouter();
     const [mPIN, setMPIN] = useState(['', '', '', '']);
     const [attemptsRemaining, setAttemptsRemaining] = useState(5);
@@ -50,8 +52,11 @@ const AuthScreen = () => {
     },[])
     const handleMPINSubmit = async () => {
         const correctMPIN = await AsyncStorage.getItem('userPin');
+        const finalUsername = await AsyncStorage.getItem('username');
+        const userPassword = await AsyncStorage.getItem('Password');
         if (mPIN.join('') === correctMPIN) {
             setIsAuthenticated(true);
+            login(finalUsername,userPassword)
         } else {
             const remaining = attemptsRemaining - 1;
             setAttemptsRemaining(remaining);
@@ -63,24 +68,21 @@ const AuthScreen = () => {
         }
     };
     const handleBiometricAuthentication = async () => {
+        const finalUsername = await AsyncStorage.getItem('username');
+        const userPassword = await AsyncStorage.getItem('Password');
         try {
             const biometricAuth = await LocalAuthentication.authenticateAsync({
                 promptMessage: 'Authenticate using biometrics',
                 fallbackLabel: 'Enter mPIN',
             });
-
             if (biometricAuth.success) {
                 setIsAuthenticated(true);
+                login(finalUsername,userPassword)
             } 
         } catch (err) {
             console.error(err);
         }
     };
-
-    if (isAuthenticated) {
-        router.replace({pathname: 'home' });
-    }
-
     return (
         <ImageBackground
             source={require('../../assets/images/Backgroundback.png')} // Example background image URL

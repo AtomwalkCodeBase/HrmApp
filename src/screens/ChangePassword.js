@@ -1,4 +1,4 @@
-import React, {useState } from 'react';
+import React, {useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Animated, Easing } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useRouter } from "expo-router";
@@ -8,7 +8,15 @@ const ResetPasswordScreen = () => {
   const [pin, setPin] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const router = useRouter();
+  const [userPin, setUserPin] = useState(null);
 
+  useEffect(() => {
+      const fetchUserPin = async () => {
+          const storedPin = await AsyncStorage.getItem('userPin');
+          setUserPin(storedPin); // storedPin will be `null` if no value is found
+      };
+      fetchUserPin();
+  }, []);
   const shakeAnim = new Animated.Value(0); // Animation for shaking error message
 
   const triggerShake = () => {
@@ -52,7 +60,7 @@ const ResetPasswordScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Set Your PIN</Text>
+      <Text style={styles.title}>{userPin?"Update Your PIN":"Set Your PIN"}</Text>
       <TextInput
         style={styles.input}
         placeholder="Enter Password"
