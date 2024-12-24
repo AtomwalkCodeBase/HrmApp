@@ -135,7 +135,18 @@ const AddAttendance = () => {
       headerShown: false,
     });
   }, [navigation]);
+const setdatatime=async()=>{
+  // const date = moment().format('DD-MM-YYYY');
+    let time = moment().format('hh:mm A');
 
+    if (moment().isBetween(moment().startOf('day').add(12, 'hours').add(1, 'minute'), moment().startOf('day').add(13, 'hours'))) {
+      time = time.replace(/^12/, '00');
+    }
+
+    // setCurrentDate(date);
+   return time;
+
+}
   useEffect(() => {
     const date = moment().format('DD-MM-YYYY');
     let time = moment().format('hh:mm A');
@@ -192,6 +203,7 @@ const AddAttendance = () => {
   };
 
   const handleCheck = async (data) => {
+    // setdatatime();
     setIsLoading(true); // Show loader when check-in/check-out action starts
     const { status } = await Location.requestForegroundPermissionsAsync();
   
@@ -222,11 +234,11 @@ const AddAttendance = () => {
   
     const todayAttendance = attData.find((item) => item.a_date === currentDate);
     const attendanceId = todayAttendance ? todayAttendance.id : null;
-  
+     const time= await setdatatime();
     const checkPayload = {
       emp_id: employeeData?.emp_data?.emp_id,
       call_mode: data,
-      time: currentTime,
+      time: time,
       geo_type: data === 'ADD' ? 'I' : 'O',
       a_date: currentDate,
       latitude_id: `${location?.coords?.latitude}`,

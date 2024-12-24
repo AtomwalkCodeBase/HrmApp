@@ -1,6 +1,6 @@
 import { useNavigation, useRouter } from 'expo-router';
 import React, { useEffect, useLayoutEffect, useState } from 'react';
-import { Alert, ScrollView } from 'react-native';
+import { Alert, Linking, SafeAreaView, ScrollView, View } from 'react-native';
 import styled from 'styled-components/native';
 import { getProfileInfo } from '../services/authServices';
 import { getClaimApprover, postClaimAction } from '../services/productServices';
@@ -10,6 +10,8 @@ import RemarksInput from '../components/RemarkInput';
 import DropdownPicker from '../components/DropdownPicker';
 import SuccessModal from '../components/SuccessModal'; // Import SuccessModal component
 import Loader from '../components/old_components/Loader';
+import ImageViewer from 'react-native-image-zoom-viewer';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const Container = styled.View`
   flex: 1;
@@ -23,6 +25,39 @@ const ClaimDetailContainer = styled.View`
   border-radius: 12px;
   margin-bottom: 20px;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+`;
+
+const ViewButtonContainer = styled.View`
+  /* border: 1px solid #a970ff; */
+  align-items: flex-end;
+  margin-right: -10px;
+  margin-top: -10px;
+  /* padding: 16px; */
+  /* border-radius: 12px; */
+  /* margin-bottom: 20px; */
+  /* box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); */
+`;
+
+const ViewButton = styled.TouchableOpacity`
+  background-color:rgb(216, 233, 250);
+  border: 1px solid rgb(57, 168, 253);
+  padding: 7px 8px;
+  border-radius: 5px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  /* margin-top: 10px; */
+  shadow-color: #000;
+  shadow-offset: 0px 1px;
+  shadow-opacity: 0.1;
+  shadow-radius: 2px;
+  /* width: 40%; */
+`;
+
+const ClaimText = styled.Text`
+  font-size: 15px;
+  color: #2f2f2f;
+  font-weight: 500;
 `;
 
 const ClaimDetailText = styled.Text`
@@ -61,6 +96,7 @@ const ApproveClaimDetails = (props) => {
   const [profile, setProfile] = useState({});
   const [showSuccessModal, setShowSuccessModal] = useState(false); // State to control SuccessModal visibility
   const [isLoading, setIsLoading] = useState(false); // Loader state
+  const [selectedImageUrl, setSelectedImageUrl] = useState(null);
 
   let claim;
   const claimData = props?.claim_data;
@@ -121,9 +157,25 @@ const ApproveClaimDetails = (props) => {
   }, [navigation]);
 
   const handleBackPress = () => {
-    router.push('ApproveClaim');
+    if (selectedImageUrl) {
+      setSelectedImageUrl(null);
+    } else {
+      router.push('ApproveClaim');
+    }
   };
 
+  const handleViewFile = (fileUrl) => {
+    // console.log('File Url===',fileUrl)
+      const fileExtension = fileUrl.split('.').pop().split('?')[0].toLowerCase();
+      if (['jpg', 'jpeg', 'png'].includes(fileExtension)) {
+        setSelectedImageUrl(fileUrl);
+      } else if (fileExtension === 'pdf') {
+        Alert.alert('File Downloading', 'The file is being downloaded.');
+        Linking.openURL(fileUrl).catch((err) => console.error('Failed to open URL:', err));
+      } else {
+        console.warn('Unsupported file type:', fileExtension);
+      }
+    };
 
   // Parse and calculate dates for claim submission
   const parseDate = (dateString) => {
@@ -224,18 +276,45 @@ const handleAction = (res1) => {
     });
 };
 
+if (selectedImageUrl) {
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <HeaderComponent headerTitle="View Image" onBackPress={handleBackPress} />
+      <View style={{ flex: 1 }}>
+        {/* Using ImageViewer for zoom functionality */}
+        <ImageViewer
+          imageUrls={[{ url: selectedImageUrl }]} // Array of images
+          enableSwipeDown={true}
+          onSwipeDown={handleBackPress} // Close the image viewer on swipe down
+        />
+      </View>
+    </SafeAreaView>
+  );
+}
+
   return (
     <>
       <HeaderComponent headerTitle={"Approve" + " " + `(${claim?.claim_id})`} onBackPress={handleBackPress} />
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <Container>
           <ClaimDetailContainer>
+          {claim.submitted_file_1 && (
+              <ViewButtonContainer>
+                <ViewButton onPress={() => handleViewFile(claim.submitted_file_1)}>
+                  <MaterialIcons name="visibility" size={20} color="#333" />
+                  <ClaimText style={{ marginLeft: 5 }}>View File</ClaimText>
+                </ViewButton>
+                </ViewButtonContainer>
+              )}
             <ClaimDetailText>Expense Item: {claim?.item_name}</ClaimDetailText>
             <ClaimDetailText>Expense Date: {claim?.expense_date}</ClaimDetailText>
             <ClaimDetailText>Emp: {claim?.employee_name}</ClaimDetailText>
             <ClaimDetailText>Claim Amount: {claim?.expense_amt}</ClaimDetailText>
             <ClaimDetailText>Claim Remark: {claim?.remarks}</ClaimDetailText>
+
+            
           </ClaimDetailContainer>
+          
 
           <FillFieldsContainer>
           <AmountInput
