@@ -148,7 +148,14 @@ const ClaimScreen = ({ headerTitle = "My Claim", buttonLabel = "Apply Claim", fe
       </Container>
       
       {/* Loader Component */}
-      <Loader visible={isLoading} />
+      {/* <Loader visible={isLoading} /> */}
+      <Loader
+        visible={isLoading}
+        // onTimeout={() => {
+        //   setIsLoading(false); // Hide loader
+        //   Alert.alert('Timeout', 'Not able to proceed');
+        // }}
+      />
     </SafeAreaView>
   );
 };

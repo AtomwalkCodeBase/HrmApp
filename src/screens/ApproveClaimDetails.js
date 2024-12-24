@@ -9,6 +9,7 @@ import AmountInput from '../components/AmountInput';
 import RemarksInput from '../components/RemarkInput';
 import DropdownPicker from '../components/DropdownPicker';
 import SuccessModal from '../components/SuccessModal'; // Import SuccessModal component
+import Loader from '../components/old_components/Loader';
 
 const Container = styled.View`
   flex: 1;
@@ -59,6 +60,7 @@ const ButtonText = styled.Text`
 const ApproveClaimDetails = (props) => {
   const [profile, setProfile] = useState({});
   const [showSuccessModal, setShowSuccessModal] = useState(false); // State to control SuccessModal visibility
+  const [isLoading, setIsLoading] = useState(false); // Loader state
 
   let claim;
   const claimData = props?.claim_data;
@@ -93,13 +95,24 @@ const ApproveClaimDetails = (props) => {
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    getProfileInfo().then((res) => {
-      setProfile(res.data);
-    });
-    getClaimApprover()
-      .then((res) => setManagers(res.data))
-      .catch((error) => console.error('Error fetching claim approvers: ', error));
+    const fetchData = async () => {
+      setIsLoading(true); // Show loader
+      try {
+        const profileRes = await getProfileInfo();
+        setProfile(profileRes.data);
+
+        const approversRes = await getClaimApprover();
+        setManagers(approversRes.data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsLoading(false); // Hide loader
+      }
+    };
+
+    fetchData();
   }, []);
+
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -160,6 +173,10 @@ const ApproveClaimDetails = (props) => {
         
     }
 }, [managerData, claimAmount, claimGradeLevel, maxApproveDays]);
+
+if (isLoading) {
+  return <Loader visible={isLoading} />; // Show loader while data is loading
+}
 
 
 const handleAction = (res1) => {

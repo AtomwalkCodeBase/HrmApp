@@ -162,7 +162,14 @@ const AddClaim = () => {
     <SafeAreaView style={{ flex: 1 }}>
       <HeaderComponent headerTitle="Add Claim" onBackPress={handleBackPress} />
       {isLoading ? (
-        <Loader visible={isLoading}/> // Show Loader while loading
+        // <Loader visible={isLoading}/> // Show Loader while loading
+        <Loader
+          visible={isLoading}
+          onTimeout={() => {
+            setIsLoading(false); // Hide loader
+            Alert.alert('Timeout', 'Not able to add the Claim.');
+          }}
+        />
       ) : (
         <Container>
           <DropdownPicker

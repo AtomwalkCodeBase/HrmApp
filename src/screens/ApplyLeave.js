@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useLayoutEffect, useEffect } from 'react';
-import { Keyboard, SafeAreaView } from 'react-native';
+import { Keyboard, SafeAreaView, Alert } from 'react-native';
 import { useNavigation, useRouter } from 'expo-router';
 import { postEmpLeave } from '../services/productServices';
 import HeaderComponent from './HeaderComponent';
@@ -8,6 +8,7 @@ import RemarksTextArea from '../components/RemarkInput';
 import DropdownPicker from '../components/DropdownPicker';
 import SubmitButton from '../components/SubmitButton';
 import SuccessModal from '../components/SuccessModal'; // Import the SuccessModal component
+import Loader from '../components/old_components/Loader'; // Import the Loader component
 import styled from 'styled-components/native';
 import { getProfileInfo } from '../services/authServices';
 import { colors } from '../Styles/appStyle';
@@ -27,8 +28,9 @@ const ApplyLeave = (props) => {
   const [errors, setErrors] = useState({});
   const [profile, setProfile] = useState({});
   const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false); // State to control SuccessModal visibility
+  const [isLoading, setIsLoading] = useState(false); // State to control Loader visibility
   const call_mode = 'ADD';
-  
+
   const navigation = useNavigation();
   const router = useRouter();
 
@@ -89,6 +91,7 @@ const ApplyLeave = (props) => {
   };
 
   const addLeave = (res) => {
+    setIsLoading(true); // Show loader before submission
     const leavePayload = {
       emp_id: `${props.id || profile?.emp_data?.id}`,
       from_date: `${fromDate.getDate().toString().padStart(2, '0')}-${(fromDate.getMonth() + 1).toString().padStart(2, '0')}-${fromDate.getFullYear()}`,
@@ -100,9 +103,11 @@ const ApplyLeave = (props) => {
 
     postEmpLeave(leavePayload)
       .then(() => {
+        setIsLoading(false); // Hide loader on success
         setIsSuccessModalVisible(true); // Show success modal on successful submission
       })
       .catch(() => {
+        setIsLoading(false); // Hide loader on error
         Alert.alert(
           'Leave Application Failed',
           'Please verify the selected dates. Either the dates are already approved or fall on a holiday.'
@@ -150,7 +155,10 @@ const ApplyLeave = (props) => {
           textColor="white"
         />
       </Container>
-      
+
+      {/* Loader */}
+      <Loader visible={isLoading} />
+
       {/* Success Modal */}
       <SuccessModal 
         visible={isSuccessModalVisible} 

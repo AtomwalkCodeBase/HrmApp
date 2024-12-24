@@ -153,16 +153,19 @@ const ApproveClaim = () => {
     fetchClaimDetails();
   }, []);
 
-  const fetchClaimDetails = () => {
-    setIsLoading(true);  // Set loading to true when fetching
-    getEmpClaim(requestData).then((res) => {
+  const fetchClaimDetails = async () => {
+    setIsLoading(true); // Show the loader
+    try {
+      const res = await getEmpClaim(requestData);
       setClaimData(res.data);
       setFilteredData(res.data);
-      setIsLoading(false);  // Set loading to false once data is fetched
-    }).catch(() => {
-      setIsLoading(false);  // Ensure loading is turned off even if the request fails
-    });
+    } catch (error) {
+      console.error("Error fetching claim details:", error);
+    } finally {
+      setIsLoading(false); // Always stop the loader
+    }
   };
+  
 
   const getClaimStatus = (status) => {
     switch (status) {

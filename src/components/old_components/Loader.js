@@ -6,29 +6,48 @@ import {
   Animated,
   ActivityIndicator,
   StyleSheet,
+  Alert,
 } from 'react-native';
 import { colors } from '../../Styles/appStyle';
 
-const Loader = ({ visible = false }) => {
+const Loader = ({ visible = false, onTimeout }) => {
   const { width, height } = useWindowDimensions();
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const timeoutRef = useRef(null);
 
   useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.5,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  }, [pulseAnim]);
+    if (visible) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.5,
+            duration: 800,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 800,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+
+      timeoutRef.current = setTimeout(() => {
+        if (onTimeout) {
+          onTimeout();
+        } else {
+          Alert.alert('Timeout', 'Not able to proceed');
+        }
+      }, 45000);
+    }
+
+    return () => {
+      // Cleanup timeout and animation when component unmounts or visibility changes
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+      pulseAnim.setValue(1);
+    };
+  }, [visible, pulseAnim, onTimeout]);
 
   if (!visible) return null;
 
