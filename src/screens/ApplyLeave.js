@@ -27,7 +27,9 @@ const ApplyLeave = (props) => {
   const [numOfDays, setNumOfDays] = useState(0);
   const [errors, setErrors] = useState({});
   const [profile, setProfile] = useState({});
-  const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false); // State to control SuccessModal visibility
+  const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
+  const [isErrorModalVisible, setIsErrorModalVisible] = useState(false); // Error modal visibility state
+  const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false); // State to control Loader visibility
   const call_mode = 'ADD';
 
@@ -103,8 +105,8 @@ const ApplyLeave = (props) => {
 
     postEmpLeave(leavePayload)
       .then(() => {
-        setIsLoading(false); // Hide loader on success
-        setIsSuccessModalVisible(true); // Show success modal on successful submission
+        setIsLoading(false);
+        setIsSuccessModalVisible(true);
       })
       .catch(() => {
         setIsLoading(false); // Hide loader on error

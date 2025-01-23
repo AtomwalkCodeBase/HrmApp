@@ -38,7 +38,7 @@ const Loader = ({ visible = false, onTimeout }) => {
         } else {
           Alert.alert('Timeout', 'Not able to proceed');
         }
-      }, 45000);
+      }, 70000);
     }
 
     return () => {

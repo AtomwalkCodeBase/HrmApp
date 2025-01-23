@@ -168,6 +168,8 @@ const LeaveScreen = () => {
       .finally(() => setLoading(false)); // Set loading to false after data is fetched
   };
 
+  console.log('Response data',leaveData);
+
   const handleBackPress = () => {
     router.push('home');
   };
@@ -185,6 +187,8 @@ const LeaveScreen = () => {
 
   const count = leaveData.length;
   const max_leave = profile?.emp_data?.max_no_leave;
+
+  console.log('Emp data',profile?.emp_data)
 
   const getStatusStyles = (status_display) => {
     switch (status_display) {

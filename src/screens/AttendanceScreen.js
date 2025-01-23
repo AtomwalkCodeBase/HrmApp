@@ -184,6 +184,9 @@ const setdatatime=async()=>{
     });
   };
 
+  console.log('Attendance==',attendance);
+  console.log('Process att==',attData)
+
   const processAttendanceData = (data) => {
     const todayAttendance = data.find((item) => item.a_date === currentDate);
 
@@ -313,15 +316,15 @@ const setdatatime=async()=>{
                     onPress={() => handleCheck('ADD')}
                     checked={checkedIn}
                     type="checkin"
-                    disabled={checkedIn || attendance.geo_status === 'O'}
+                    disabled={checkedIn || attendance.geo_status === 'O' || !!attendance.end_time}
                   >
                     <Entypo
                       name="location-pin"
                       size={24}
-                      color={checkedIn || attendance.geo_status === 'O' ? 'white' : 'black'}
+                      color={checkedIn || attendance.geo_status === 'O' || !!attendance.start_time ? 'white' : 'black'}
                     />
-                    <ButtonText disabled={checkedIn || attendance.geo_status === 'O'}>
-                      {checkedIn || attendance.geo_status === 'O'
+                    <ButtonText disabled={checkedIn || attendance.geo_status === 'O' || !!attendance.start_time}>
+                      {checkedIn || attendance.geo_status === 'O' || !!attendance.start_time
                         ? `Checked-In at ${attendance.start_time}`
                         : 'CHECK IN'}
                     </ButtonText>
@@ -331,7 +334,7 @@ const setdatatime=async()=>{
                       onPress={() => setIsRemarkModalVisible(true)}
                       checked={checkedIn}
                       type="checkout"
-                      disabled={!checkedIn || attendance.geo_status !== 'I'}
+                      disabled={!checkedIn || attendance.geo_status !== 'I' || !!attendance.end_time}
                     >
                       <Feather
                         name="log-out"
@@ -339,7 +342,7 @@ const setdatatime=async()=>{
                         color={!checkedIn || attendance.geo_status !== 'I' ? 'white' : 'black'}
                       />
                       <ButtonText disabled={!checkedIn || attendance.geo_status !== 'I'}>
-                        {attendance.geo_status === 'I'
+                        {attendance.geo_status === 'I' && !attendance.end_time
                           ? 'CHECK OUT'
                           : `Checked-Out at ${attendance.end_time}`}
                       </ButtonText>
