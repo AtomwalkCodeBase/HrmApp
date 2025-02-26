@@ -1,4 +1,4 @@
-import { addEmpLeave, getEmpLeavedata, addClaim, getEmpClaimdata, getExpenseItemList, getProjectList, getEmpAttendanceData, getEmpHolidayData, empCheckData, processClaim, getClaimApproverList } from "../services/ConstantServies";
+import { addEmpLeave, getEmpLeavedata, addClaim, getEmpClaimdata, getExpenseItemList, getProjectList, getEmpAttendanceData, getEmpHolidayData, empCheckData, processClaim, getClaimApproverList, getfiletotext, getAppointeeList, processAppointee } from "../services/ConstantServies";
 import { authAxios, authAxiosFilePost, authAxiosPost } from "./HttpMethod";
 
 export function getEmpLeave(leave_type , emp_id, year) {
@@ -94,4 +94,26 @@ export function getEmpLeave(leave_type , emp_id, year) {
     }
     // console.log('Data to be sent:', data);
     return authAxiosPost(empCheckData, data)
+  }
+
+
+  export function imagetotext(Uri) {
+    // console.log('getUserList3434',Uri)
+    let data = {};
+    data = Uri
+    return authAxiosFilePost(getfiletotext, data);
+  }
+
+  // export function getAppointee() { 
+  //   return authAxios(getAppointeeList)
+  // }
+
+  export function postAppointee(res) {
+    let data = {};
+    if (res) {
+      data['emp_data'] = res;
+    }
+    console.log('Data to be sent:', data);
+    return authAxiosPost(processAppointee, data)
+  
   }

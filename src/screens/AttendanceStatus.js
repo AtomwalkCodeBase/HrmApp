@@ -4,7 +4,7 @@ import styled from 'styled-components/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { getEmpAttendance, getEmpHoliday } from '../services/productServices';
 import { useNavigation } from 'expo-router';
-import HeaderComponent from './HeaderComponent';
+import HeaderComponent from '../components/HeaderComponent';
 
 const Container = styled.View`
   flex: 1;

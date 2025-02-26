@@ -2,7 +2,6 @@ import React, { useState, useCallback, useLayoutEffect, useEffect } from 'react'
 import { Keyboard, SafeAreaView, Alert } from 'react-native';
 import { useNavigation, useRouter } from 'expo-router';
 import { postEmpLeave } from '../services/productServices';
-import HeaderComponent from './HeaderComponent';
 import DatePicker from '../components/DatePicker';
 import RemarksTextArea from '../components/RemarkInput';
 import DropdownPicker from '../components/DropdownPicker';
@@ -12,6 +11,7 @@ import Loader from '../components/old_components/Loader'; // Import the Loader c
 import styled from 'styled-components/native';
 import { getProfileInfo } from '../services/authServices';
 import { colors } from '../Styles/appStyle';
+import HeaderComponent from '../components/HeaderComponent';
 
 const Container = styled.ScrollView`
   flex: 1;
@@ -108,12 +108,13 @@ const ApplyLeave = (props) => {
         setIsLoading(false);
         setIsSuccessModalVisible(true);
       })
-      .catch(() => {
+      .catch((error) => {
         setIsLoading(false); // Hide loader on error
         Alert.alert(
           'Leave Application Failed',
           'Please verify the selected dates. Either the dates are already approved or fall on a holiday.'
         );
+        console.log('Error==',error)
       });
   };
 

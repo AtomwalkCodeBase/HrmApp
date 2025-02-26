@@ -4,20 +4,22 @@ import {
   View,
   Text,
   Animated,
-  ActivityIndicator,
   StyleSheet,
   Alert,
 } from 'react-native';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'; // Import icons
+import { FontAwesome5 } from '@expo/vector-icons';
 import { colors } from '../../Styles/appStyle';
 
 const Loader = ({ visible = false, onTimeout }) => {
   const { width, height } = useWindowDimensions();
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const rotateAnim = useRef(new Animated.Value(0)).current;
   const timeoutRef = useRef(null);
 
   useEffect(() => {
     if (visible) {
-      Animated.loop(
+      const pulseAnimation = Animated.loop(
         Animated.sequence([
           Animated.timing(pulseAnim, {
             toValue: 1.5,
@@ -30,7 +32,18 @@ const Loader = ({ visible = false, onTimeout }) => {
             useNativeDriver: true,
           }),
         ])
-      ).start();
+      );
+
+      const rotateAnimation = Animated.loop(
+        Animated.timing(rotateAnim, {
+          toValue: 1,
+          duration: 2000,
+          useNativeDriver: true,
+        })
+      );
+
+      pulseAnimation.start();
+      rotateAnimation.start();
 
       timeoutRef.current = setTimeout(() => {
         if (onTimeout) {
@@ -39,22 +52,33 @@ const Loader = ({ visible = false, onTimeout }) => {
           Alert.alert('Timeout', 'Not able to proceed');
         }
       }, 70000);
-    }
 
-    return () => {
-      // Cleanup timeout and animation when component unmounts or visibility changes
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-      pulseAnim.setValue(1);
-    };
-  }, [visible, pulseAnim, onTimeout]);
+      return () => {
+        // Cleanup timeout and animations when component unmounts or visibility changes
+        pulseAnimation.stop();
+        rotateAnimation.stop();
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+        pulseAnim.setValue(1);
+        rotateAnim.setValue(0);
+      };
+    }
+  }, [visible, pulseAnim, rotateAnim, onTimeout]);
 
   if (!visible) return null;
+
+  const rotateInterpolate = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
 
   return (
     <View style={[styles.container, { height, width }]}>
       <Animated.View style={[styles.loader, { transform: [{ scale: pulseAnim }] }]}>
-        <ActivityIndicator size="large" color={colors.blue} />
+        <Animated.View style={{ transform: [{ rotate: rotateInterpolate }] }}>
+          {/* <MaterialCommunityIcons name="atom" size={40} color="rgb(254, 171, 98)" /> */}
+          <FontAwesome5 name="atom" size={40} color="#a970ff" />
+        </Animated.View>
         <Text style={styles.loadingText}>Loading...</Text>
       </Animated.View>
     </View>
@@ -64,6 +88,10 @@ const Loader = ({ visible = false, onTimeout }) => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     zIndex: 10,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
@@ -87,7 +115,7 @@ const styles = StyleSheet.create({
     marginTop: 15,
     fontSize: 16,
     fontWeight: 'bold',
-    color: colors.blue,
+    color: '#a970ff',
   },
 });
 

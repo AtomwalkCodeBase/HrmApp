@@ -24,9 +24,9 @@ const ButtonText = styled.Text`
   margin-left: 8px;
 `;
 
-const ApplyButton = ({ onPress, buttonText }) => (
+const ApplyButton = ({ onPress, buttonText, icon }) => (
   <ApplyClaimButtonContainer onPress={onPress}>
-    <MaterialIcons name="add-circle" size={width > 400 ? 26 : 24} color="#fff" />
+    <MaterialIcons name={icon} size={width > 400 ? 26 : 24} color="#fff" />
     <ButtonText>{buttonText}</ButtonText>
   </ApplyClaimButtonContainer>
 );

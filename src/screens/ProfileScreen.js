@@ -1,14 +1,15 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import styled from 'styled-components/native';
-import { View, Text } from 'react-native';
+import { Modal, View, Text } from 'react-native';
 import { MaterialCommunityIcons, FontAwesome } from '@expo/vector-icons';
 import { AppContext } from '../../context/AppContext';
 import { getProfileInfo } from '../services/authServices';
-import HeaderComponent from './HeaderComponent';
 import { useNavigation, useRouter } from 'expo-router';
 import Animated, { FadeIn, FadeOut, SlideInLeft, SlideOutRight } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import QRModal from '../components/QRModal';
+import HeaderComponent from '../components/HeaderComponent';
 
 // Styled components
 const Container = styled.View`
@@ -18,6 +19,16 @@ const Container = styled.View`
   background-color: #f9f9fb;
   padding: 20px;
 `;
+
+const QRScannerIcon = styled.TouchableOpacity`
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  padding: 10px;
+  background-color: #e0f7fa;
+  border-radius: 25px;
+`;
+
 const DetailsContainer = styled.View`
   /* flex: 1; */
   justify-content: flex-start;
@@ -38,7 +49,24 @@ const AvatarContainer = styled(Animated.View)`
   shadow-opacity: 0.3;
   shadow-radius: 10px;
   elevation: 8;
+  position: relative;
 `;
+
+// const QRIconContainer = styled.TouchableOpacity`
+//   position: absolute;
+//   bottom: -00px;
+//   right: -0px;
+//   width: 40%; /* Set width and height to equal values */
+//   height: 40%;
+//   background-color: #ffffff;
+//   border-radius: 25px; /* Make it circular by setting half of width/height */
+//   border-width: 2px;
+//   border-color: #e0e0e0;
+//   justify-content: center; /* Center the content */
+//   align-items: center;
+//   /* z-index: 50px; */
+// `;
+
 
 const ProfileImage = styled.Image`
   width: 100px;
@@ -118,8 +146,13 @@ const ChangePasswordText = styled.Text`
 const ProfileScreen = () => {
   const { logout } = useContext(AppContext);
   const [profile, setProfile] = useState({});
-  const [isManager, setIsManager] = useState(false);
+  // const [isManager, setIsManager] = useState(false);
+  const [userGroup, setUserGroup] = useState({});
   const [userPin, setUserPin] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isScannerVisible, setIsScannerVisible] = useState(false);
+  const [hasPermission, setHasPermission] = useState(null);
+
 
     useEffect(() => {
         const fetchUserPin = async () => {
@@ -133,11 +166,16 @@ const ProfileScreen = () => {
 
   useEffect(() => {
     getProfileInfo().then((res) => {
-      setProfile(res.data);
-      setIsManager(res.data.user_group.is_manager);
+      setProfile(res?.data);
+      setUserGroup(res.data?.user_group);
+      // setIsManager(res.data?.user_group?.is_manager);
     });
   }, []);
 
+
+ 
+
+  console.log('Profile data--',profile);
   const handleBackPress = () => {
     navigation.goBack();
   };
@@ -146,33 +184,60 @@ const ProfileScreen = () => {
     router.push({ pathname: 'ResetPassword' });
   };
 
+  const handleQRPress = () => {
+    setIsModalVisible(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalVisible(false);
+  };
+
+  
+
+
   return (
     <>
       <HeaderComponent headerTitle="My Profile" onBackPress={handleBackPress} />
       <Container>
+      <QRScannerIcon onPress={handleQRPress}>
+          <MaterialCommunityIcons name="qrcode" size={28} color="#00796b" />
+        </QRScannerIcon>
+
+
         <AvatarContainer entering={FadeIn.duration(700)} exiting={FadeOut.duration(500)}>
           <ProfileImage source={{ uri: profile?.image }} />
+          {/* <QRIconContainer onPress={handleQRPress}>
+            <MaterialCommunityIcons name="qrcode" size={28} color="#00796b" />
+          </QRIconContainer> */}
         </AvatarContainer>
+
 
         <UserName entering={FadeIn.duration(500)}>{profile?.emp_data?.name}</UserName>
         <UserName entering={FadeIn.duration(600)}>{profile?.user_name}</UserName>
+        {!userGroup.is_manager || !userGroup.is_admin || userGroup.is_owner && (
 
-        <IsManagerContainer entering={SlideInLeft.delay(300).duration(400)}>
-          <ManagerText>Is Manager:</ManagerText>
+        <IsManagerContainer>
+          {userGroup.is_manager && !userGroup.is_admin && !userGroup.is_owner && (
+            <ManagerText>Is Manager:</ManagerText>
+          )}
+          {userGroup.is_admin && !userGroup.is_owner && (
+            <ManagerText>Is Admin:</ManagerText>
+          )}
+          {userGroup.is_owner && <ManagerText>Is Owner:</ManagerText>}
           <MaterialCommunityIcons
-            name={isManager ? "check-circle" : "cancel"}
+            name={(userGroup.is_manager || userGroup.is_admin || userGroup.is_owner) ? "check-circle" : "cancel"}
             size={24}
-            color={isManager ? "lightblue" : "red"}
+            color={(userGroup.is_manager || userGroup.is_admin || userGroup.is_owner) ? "lightblue" : "red"}
           />
         </IsManagerContainer>
+        )}
 
         <DetailsContainer>
-        
 
         {profile?.emp_data?.emp_id && (
           <InfoContainer entering={SlideInLeft.delay(400)}>
             <InfoIcon name="badge-account-horizontal" size={24} color="#555" />
-            <InfoText entering={FadeIn.duration(300)}>Employee ID: {profile.emp_data.emp_id}</InfoText>
+            <InfoText entering={FadeIn.duration(300)}>Employee ID: {profile?.emp_data?.emp_id}</InfoText>
           </InfoContainer>
         )}
         {profile?.emp_data?.department_name && (
@@ -198,6 +263,14 @@ const ProfileScreen = () => {
         <ChangePasswordButton onPress={handlePressPassword} entering={FadeIn.delay(800)}>
           <ChangePasswordText>{userPin?"Update Your Pin":"Set Your Pin"}</ChangePasswordText>
         </ChangePasswordButton>
+
+        <QRModal
+          isVisible={isModalVisible}
+          onClose={handleCloseModal}
+          qrValue={profile?.emp_data?.emp_id || 'No Image Available'}
+        />
+
+       
       </Container>
     </>
   );

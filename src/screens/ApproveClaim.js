@@ -4,11 +4,11 @@ import styled from 'styled-components/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation, useRouter } from 'expo-router';
 import { getEmpClaim } from '../services/productServices';
-import HeaderComponent from './HeaderComponent';
 import ImageViewer from 'react-native-image-zoom-viewer'; // Import the Image Zoom Viewer
 import ModalComponent from '../components/ModalComponent';
 import EmptyMessage from '../components/EmptyMessage';
 import Loader from '../components/old_components/Loader';
+import HeaderComponent from '../components/HeaderComponent';
 const Container = styled.View`
   flex: 1;
   padding: 10px;

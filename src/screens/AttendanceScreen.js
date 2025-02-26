@@ -9,10 +9,10 @@ import Entypo from '@expo/vector-icons/Entypo';
 import Feather from '@expo/vector-icons/Feather';
 import { getProfileInfo } from '../services/authServices';
 import RemarksInput from '../components/RemarkInput';
-import HeaderComponent from './HeaderComponent';
 import { getEmpAttendance, postCheckIn } from '../services/productServices';
 import Loader from '../components/old_components/Loader';  // Assuming you have a Loader component
 import SuccessModal from '../components/SuccessModal';
+import HeaderComponent from '../components/HeaderComponent';
 
 const Container = styled.View`
   flex: 1;

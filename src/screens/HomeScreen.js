@@ -5,6 +5,7 @@ import {AppContext} from '../../context/AppContext'
 import { getCompanyInfo, getProfileInfo } from '../services/authServices'
 import { Link, useRouter } from "expo-router";
 import { LinearGradient } from 'expo-linear-gradient';
+import Loader from '../components/old_components/Loader';
 
 const { width, height } = Dimensions.get('window');
 const Container = styled.View`
@@ -21,9 +22,12 @@ const GradientHeader = styled(LinearGradient)`
   border-bottom-right-radius: 30px;
   position: relative;
 `;
-const MenuContainer = styled(ScrollView)`
+const MenuContainer = styled.ScrollView.attrs({
+  showsVerticalScrollIndicator: false,  // Hide vertical scrollbar
+  showsHorizontalScrollIndicator: false,  // Hide horizontal scrollbar
+})`
   height: ${height * 0.6}px;
-  margin-top: 30px;
+  margin-top: 10px;
   padding: 10px;
 `;
 
@@ -40,6 +44,19 @@ const MenuItem = styled.TouchableOpacity`
   padding: ${height * 0.02}px;
   border-radius: 15px;
   margin-bottom: 20px;
+  /* border: 1px solid #333; */
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+`;
+
+const MenuItemLast = styled.TouchableOpacity`
+  width: 45%;
+  height: ${height * 0.12}px;
+  background-color: #F4EBF6;
+  padding: ${height * 0.02}px;
+  border-radius: 15px;
+  margin-bottom: 70px;
   /* border: 1px solid #333; */
   align-items: center;
   justify-content: center;
@@ -176,9 +193,16 @@ const HomePage = () => {
         setLoading(false);
     });
     }, []);
+
+    console.log('Company ---',company);
     
     const handlePressLeave = () => {
       router.push('leave');
+    };
+    const handlePressId = () => {
+      router.push({
+        pathname: 'IdCard' 
+      });
     };
     const handlePressHoliday = () => {
       router.push({
@@ -201,6 +225,12 @@ const HomePage = () => {
       });
     };
 
+    const handleAppointee = () => {
+      router.push({
+        pathname: 'AddAppointee' 
+      });
+    };
+
     const handlePressAttendance = () => {
       router.push('attendance');
     };
@@ -210,6 +240,7 @@ const HomePage = () => {
     <Container>
       
       <StatusBar barStyle={'light-content'} backgroundColor={'#a970ff'} />
+      <Loader visible={loading} />
       {/* Header */}
       <Header>
       <GradientHeader colors={['#a970ff', '#a970ff']} start={[0.0, 0.5]} end={[1.0, 0.5]}>
@@ -229,6 +260,16 @@ const HomePage = () => {
 
       <MenuContainer>
       <MenuWrapper>
+
+      <MenuItem onPress={() => handlePressAttendance()}>
+        <Image source={require('../../assets/images/AttendanceIcon.png')} style={{ width: 50, height: 50 }} />
+          <MenuText>My Attendance</MenuText>
+        </MenuItem>
+
+        <MenuItem onPress={() => handlePressId()}>
+        <Image source={require('../../assets/images/id-card.png')} style={{ width: 50, height: 50 }} />
+          <MenuText>My Id Card</MenuText>
+        </MenuItem>
 
         <MenuItem onPress={() => handlePressLeave()}>
         <Image source={require('../../assets/images/LeaveIcon.png')} style={{ width: 50, height: 50 }} />
@@ -254,15 +295,17 @@ const HomePage = () => {
         </MenuItem>
         }
 
-        <MenuItem onPress={() => handlePressAttendance()}>
-        <Image source={require('../../assets/images/AttendanceIcon.png')} style={{ width: 50, height: 50 }} />
-          <MenuText>My Attendance</MenuText>
-        </MenuItem>
-
-        <MenuItem onPress={() => handlePressHoliday()}>
+        <MenuItemLast onPress={() => handlePressHoliday()}>
         <Image source={require('../../assets/images/holiday.png')} style={{ width: 50, height: 50 }} />
           <MenuText>Holiday</MenuText>
-        </MenuItem>
+        </MenuItemLast>
+
+        {isManager&&
+          <MenuItemLast onPress={() => handleAppointee()}>
+           <Image source={require('../../assets/images/AClaim.png')} style={{ width: 50, height: 50 }} />
+             <MenuText>Add Appointee</MenuText>
+           </MenuItemLast>
+           }
 
 
        </MenuWrapper>

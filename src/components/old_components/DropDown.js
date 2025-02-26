@@ -2,7 +2,7 @@ import { View, Text, StyleSheet } from 'react-native'
 import {React, useState} from 'react'
 import { Dropdown } from 'react-native-element-dropdown';
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { colors } from '../Styles/appStyle';
+import { colors } from '../../Styles/appStyle';
 
 const DropDown = ({
     inputlabel,

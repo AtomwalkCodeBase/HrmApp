@@ -148,7 +148,7 @@ useEffect( () => {
 }, []);
 
   return (
-    <AppContext.Provider value={{ state, login, logout, isLoading, userToken, companyInfo, dbName, error,setRefs,refs }}>
+    <AppContext.Provider value={{ state, login, logout, isLoading, userToken, companyInfo, dbName, error,setRefs,refs,setIsLoading }}>
       {children}
     </AppContext.Provider>
   );

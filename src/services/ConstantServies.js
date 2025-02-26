@@ -65,3 +65,7 @@ export const getEmpAttendanceData = `${endpoint}/get_employee_attendance/${db_na
 export const getEmpHolidayData = `${endpoint}/get_holiday_data/${db_name}/`;
 export const empCheckData = `${endpoint}/process_employee_attendance/${db_name}/`;
 export const getClaimApproverList = `${endpoint}/get_claim_approve_list/${db_name}/`;
+export const getfiletotext = `${endpoint}/get_file_to_text/${db_name}/`;
+// export const getAppointeeList = `${endpoint}/products/${db_name}/`;
+export const processAppointee = `${endpoint}/process_employee_job/${db_name}/`;
+

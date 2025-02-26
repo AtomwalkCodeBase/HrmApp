@@ -171,11 +171,12 @@ const HolidayScreen = () => {
       return;
     }
   
-    if (actionType === 'cancel' && currentDate >= holidayDate) {
+    if (actionType === 'cancel' && holidayDate.setHours(0, 0, 0, 0) < currentDate.setHours(0, 0, 0, 0)) {
       setErrorMessage("You cannot cancel a holiday that has already passed.");
       setErrorModalVisible(true); // Show ErrorModal if attempting to cancel a past holiday
       return;
     }
+    
   
     const formattedDate = `${day.padStart(2, '0')}-${(month + 1).toString().padStart(2, '0')}-${year}`;
   
@@ -224,14 +225,31 @@ const HolidayScreen = () => {
           </LeaveCard>
         </CardRow>
 
-        <TabContainer>
+        {holidaydata?.no_optional_holidays ? (
+          <TabContainer>
+            <Tab active={activeTab === 'Company Holiday'} onPress={() => setActiveTab('Company Holiday')}>
+              <TabText active={activeTab === 'Company Holiday'}>{'Company Holiday'}</TabText>
+            </Tab>
+            <Tab active={activeTab === 'Optional Holiday'} onPress={() => setActiveTab('Optional Holiday')}>
+              <TabText active={activeTab === 'Optional Holiday'}>{'Optional Holiday'}</TabText>
+            </Tab>
+          </TabContainer>
+        ) : null}
+
+
+        {/* <TabContainer>
           <Tab active={activeTab === 'Company Holiday'} onPress={() => setActiveTab('Company Holiday')}>
             <TabText active={activeTab === 'Company Holiday'}>Company Holiday</TabText>
           </Tab>
+          {holidaydata?.no_optional_holidays && (
+            <>
           <Tab active={activeTab === 'Optional Holiday'} onPress={() => setActiveTab('Optional Holiday')}>
             <TabText active={activeTab === 'Optional Holiday'}>Optional Holiday</TabText>
           </Tab>
-        </TabContainer>
+            </>
+          )}
+
+        </TabContainer> */}
 
         {isLoading ? (
           <Loader visible={isLoading} />

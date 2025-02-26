@@ -20,6 +20,9 @@ export default function RootLayout() {
       <Stack.Screen name="HolidayList/index" options={{headerShown:false}}/>
       <Stack.Screen name="ResetPassword/index" options={{headerShown:false}}/>
       <Stack.Screen name="ApproveLeaves/index" options={{headerShown:false}}/>
+      <Stack.Screen name="IdCard/index" options={{headerShown:false}}/>
+      <Stack.Screen name="AppointeeList/index" options={{headerShown:false}}/>
+      <Stack.Screen name="AddAppointee/index" options={{headerShown:false}}/>
     </Stack>
     
     </AppProvider>

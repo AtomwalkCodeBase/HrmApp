@@ -1,6 +1,12 @@
 import { View, Text, TextInput, StyleSheet } from 'react-native'
 import React from 'react'
 import {Controller} from 'react-hook-form';
+import styled from 'styled-components/native';
+
+const Label = styled.Text`
+  font-size: 16px;
+  margin-bottom: 5px;
+`;
 
 const CustomInput = ({
     control, 
@@ -15,6 +21,7 @@ const CustomInput = ({
         rules={rules}
         render={({field: {value, onChange, onBlur}, fieldState: {error}}) => (
         <>
+        <Label>{placeholder}</Label>
             <View
             style={[
               styles.container,

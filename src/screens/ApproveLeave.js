@@ -132,6 +132,7 @@ const LeaveScreen = () => {
           refreshing={refreshing}
           onRefresh={handleRefresh}
           ListEmptyComponent={<EmptyMessage data={`leave`}/>}
+          contentContainerStyle={{ paddingBottom: 100 }}
         />
         {selectedLeave && (
           <LeaveActionModal 

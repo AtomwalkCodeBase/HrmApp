@@ -2,7 +2,7 @@ import React, {useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Animated, Easing } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNavigation, useRouter } from "expo-router";
-import HeaderComponent from './HeaderComponent';
+import HeaderComponent from '../components/HeaderComponent';
 const ResetPasswordScreen = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
