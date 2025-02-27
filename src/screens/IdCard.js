@@ -239,7 +239,10 @@ const IdCard = () => {
                   <InfoText>Employee ID: {profile?.emp_data?.emp_id}</InfoText>
                   <InfoText>Department: {profile?.emp_data?.department_name}</InfoText>
                   {/* <InfoText>Grade: {profile?.emp_data?.grade_name}</InfoText> */}
-                  <InfoText>Mobile: {profile?.mobile_number}</InfoText>
+                  {profile?.mobile_number ? (
+                      <InfoText>Mobile: {profile?.mobile_number}</InfoText>
+                    ) : null}
+                  {/* <InfoText>Mobile: {profile?.mobile_number}</InfoText> */}
                 </View>
               </View>
               {company.name ? (
