@@ -58,7 +58,8 @@
     "styled-components": "^6.1.13",
     "undefined": "react-native-async-storage/async-storage",
     "react-native-view-shot": "~4.0.3",
-    "expo-sharing": "~13.0.1"
+    "expo-sharing": "~13.0.1",
+    "@react-native-community/netinfo": "11.4.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

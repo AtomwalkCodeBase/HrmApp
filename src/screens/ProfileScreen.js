@@ -51,6 +51,8 @@ const ProfileScreen = () => {
   const handleQRPress = () => setIsModalVisible(true);
   const handleCloseModal = () => setIsModalVisible(false);
 
+  console.log('Prf====',profile.user_name)
+
 
   return (
     <>
@@ -74,7 +76,14 @@ const ProfileScreen = () => {
             <Image source={{ uri: profile?.image }} style={styles.profileImage} />
           </Animated.View>
 
-          <Text style={styles.userName}>{profile?.emp_data?.name || 'N/A'}</Text>
+          
+          {profile?.emp_data?.name && (
+            <Text style={styles.userName}>{profile?.emp_data?.name}</Text>
+          )}
+          {profile?.user_name && (
+            <Text style={styles.userId}>{profile.user_name}</Text>
+          )}
+          
           <Text style={styles.userRole}>{userGroup?.name || 'Employee'}</Text>
         </View>
 
@@ -189,6 +198,12 @@ const styles = StyleSheet.create({
     color: '#555',
     fontWeight: '500',
     marginBottom: 15,
+  },
+  userId: {
+    fontSize: 16,
+    color: '#555',
+    fontWeight: '500',
+    marginBottom: 5,
   },
   detailsContainer: {
     width: '100%',

@@ -1,6 +1,7 @@
 import React, { useContext, useRef, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from "expo-router";
+import NetInfo from '@react-native-community/netinfo';
 import {
     View,
     Text,
@@ -15,46 +16,60 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import PinPassword from '../../src/screens/PinPassword';
 import { AppContext } from '../../context/AppContext';
 import Loader from '../../src/components/old_components/Loader';
+import ErrorModal from '../../src/components/ErrorModal';  // import your ErrorModal
 
 const AuthScreen = () => {
-    const { login,setIsLoading,isLoading } = useContext(AppContext);
+    const { login, setIsLoading, isLoading } = useContext(AppContext);
     const router = useRouter();
     const [mPIN, setMPIN] = useState(['', '', '', '']);
     const [attemptsRemaining, setAttemptsRemaining] = useState(5);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
-    // const [loading, setLoading] = useState(false);
+    const [isNetworkError, setIsNetworkError] = useState(false);   // new state for error modal
 
-    const openPopup = () => {
-        setModalVisible(true);
-    };
-    
+    const openPopup = () => setModalVisible(true);
     const maxAttempts = 5;
     const inputRefs = Array(4).fill().map(() => useRef(null));
 
     useEffect(() => {
-        handleBiometricAuthentication();
+        // Check network silently on the first load, without showing an error modal
+        NetInfo.fetch().then(netInfo => {
+            if (netInfo.isConnected) {
+                handleBiometricAuthentication();
+            }
+        });
     }, []);
+
+    const checkNetworkAndAuthenticate = async () => {
+        const netInfo = await NetInfo.fetch();
+        if (!netInfo.isConnected) {
+            setIsNetworkError(true);  // Show error modal only when the user clicks the button
+            return;
+        }
+        handleBiometricAuthentication();
+    };
+    
 
     const handleMPINChange = (text, index) => {
         const updatedMPIN = [...mPIN];
         updatedMPIN[index] = text;
         setMPIN(updatedMPIN);
 
-        if (text && index < 3) {
-            inputRefs[index + 1].current.focus();
-        }
-
-        if (!text && index > 0) {
-            inputRefs[index - 1].current.focus();
-        }
+        if (text && index < 3) inputRefs[index + 1].current.focus();
+        if (!text && index > 0) inputRefs[index - 1].current.focus();
     };
 
     const handleMPINSubmit = async () => {
+        const netInfo = await NetInfo.fetch();
+        if (!netInfo.isConnected) {
+            setIsNetworkError(true);
+            return;
+        }
+    
         const correctMPIN = await AsyncStorage.getItem('userPin');
         const finalUsername = await AsyncStorage.getItem('username');
         const userPassword = await AsyncStorage.getItem('Password');
-
+    
         setTimeout(() => {
             if (mPIN.join('') === correctMPIN) {
                 setIsAuthenticated(true);
@@ -68,14 +83,13 @@ const AuthScreen = () => {
                     Alert.alert('Account Locked', 'Too many incorrect attempts.');
                 }
             }
-            
         }, 1000);
     };
 
     const handleBiometricAuthentication = async () => {
-        // setIsLoading(true);
         const finalUsername = await AsyncStorage.getItem('username');
         const userPassword = await AsyncStorage.getItem('Password');
+
         try {
             const biometricAuth = await LocalAuthentication.authenticateAsync({
                 promptMessage: 'Authenticate using biometrics',
@@ -88,7 +102,6 @@ const AuthScreen = () => {
         } catch (err) {
             console.error(err);
         }
-        
     };
 
     return (
@@ -118,10 +131,7 @@ const AuthScreen = () => {
                             Incorrect mPIN. {attemptsRemaining} attempts remaining.
                         </Text>
                     )}
-                    <TouchableOpacity
-                        style={styles.submitButton}
-                        onPress={handleMPINSubmit}
-                    >
+                    <TouchableOpacity style={styles.submitButton} onPress={handleMPINSubmit}>
                         <Text style={styles.submitButtonText}>Submit</Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={openPopup}>
@@ -129,7 +139,7 @@ const AuthScreen = () => {
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={styles.fingerprintButton}
-                        onPress={handleBiometricAuthentication}
+                        onPress={checkNetworkAndAuthenticate}
                     >
                         <Icon name="finger-print" size={30} color="#fff" />
                         <Text style={styles.fingerprintButtonText}>Use Fingerprint</Text>
@@ -137,6 +147,13 @@ const AuthScreen = () => {
                 </View>
             </View>
             <PinPassword setModalVisible={setModalVisible} modalVisible={modalVisible} />
+            <ErrorModal
+                visible={isNetworkError}
+                message="No internet connection. Please check your network and try again."
+                onClose={() => setIsNetworkError(false)}
+                onRetry={checkNetworkAndAuthenticate}  // Retry network check
+            />
+
         </ImageBackground>
     );
 };
@@ -148,7 +165,7 @@ const styles = StyleSheet.create({
     },
     overlay: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.6)', // Add a transparent overlay for better readability
+        backgroundColor: 'rgba(0,0,0,0.6)',
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20,
@@ -187,11 +204,6 @@ const styles = StyleSheet.create({
         marginHorizontal: 5,
         backgroundColor: '#f9f9f9',
         color: '#333',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.2,
-        shadowRadius: 1.5,
-        elevation: 2,
     },
     errorText: {
         color: 'red',

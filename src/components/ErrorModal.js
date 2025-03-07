@@ -36,33 +36,46 @@ const MessageText = styled.Text`
   margin-bottom: 20px;
 `;
 
-const CloseButton = styled.TouchableOpacity`
-  padding: 10px 30px;
-  background-color: #007aff;
-  border-radius: 25px;
+const ButtonContainer = styled.View`
+  flex-direction: row;
+  gap: 10px;
 `;
 
-const CloseButtonText = styled.Text`
+const ModalButton = styled.TouchableOpacity`
+  padding: 10px 25px;
+  border-radius: 25px;
+  background-color: ${({ color }) => color || '#007aff'};
+`;
+
+const ButtonText = styled.Text`
   color: #fff;
   font-size: 16px;
   font-weight: bold;
 `;
 
-const ErrorModal = ({ visible, message, onClose }) => (
+const ErrorModal = ({ visible, message, onClose, onRetry }) => (
   <Modal transparent visible={visible} animationType="fade">
     <ModalContainer>
       <ModalContent>
         <IconContainer>
           <Image
-            source={require('../../assets/images/EmptyState.png')} // replace with your error icon
+            source={require('../../assets/images/EmptyState.png')}
             style={{ width: 80, height: 80 }}
           />
         </IconContainer>
         <TitleText>Oops!</TitleText>
         <MessageText>{message || "Something went wrong, please try again"}</MessageText>
-        <CloseButton onPress={onClose}>
-          <CloseButtonText>Close</CloseButtonText>
-        </CloseButton>
+        
+        <ButtonContainer>
+          {onRetry && (
+            <ModalButton color="#28a745" onPress={onRetry}>
+              <ButtonText>Retry</ButtonText>
+            </ModalButton>
+          )}
+          <ModalButton onPress={onClose}>
+            <ButtonText>Close</ButtonText>
+          </ModalButton>
+        </ButtonContainer>
       </ModalContent>
     </ModalContainer>
   </Modal>
