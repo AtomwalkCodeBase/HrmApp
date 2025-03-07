@@ -113,7 +113,7 @@ export function getEmpLeave(leave_type , emp_id, year) {
     if (res) {
       data['emp_data'] = res;
     }
-    console.log('Data to be sent:', data);
+    // console.log('Data to be sent:', data);
     return authAxiosPost(processAppointee, data)
   
   }
