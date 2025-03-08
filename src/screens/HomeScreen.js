@@ -6,6 +6,7 @@ import { getCompanyInfo, getProfileInfo } from '../services/authServices'
 import { Link, useRouter } from "expo-router";
 import { LinearGradient } from 'expo-linear-gradient';
 import Loader from '../components/old_components/Loader';
+import NetInfo from '@react-native-community/netinfo';
 
 const { width, height } = Dimensions.get('window');
 const Container = styled.View`
@@ -167,8 +168,28 @@ const HomePage = () => {
     const [loading, setLoading] = useState(false);
     const [profile, setProfile] = useState([]);
     const [company, setCompany] = useState([])
-
+    const [isConnected, setIsConnected] = useState(true);
     const [isManager, setIsManager] = useState(false)
+
+    const fetchData = () => {
+      setLoading(true);
+      getProfileInfo()
+        .then((res) => {
+          setProfile(res.data);
+          setIsManager(res.data.user_group.is_manager);
+        })
+        .catch(() => {
+          setIsManager(false);
+        });
+  
+      getCompanyInfo()
+        .then((res) => {
+          setCompany(res.data);
+        })
+        .catch(() => {});
+  
+      setLoading(false);
+    };
 
 
     useEffect(() => {
@@ -193,6 +214,20 @@ const HomePage = () => {
         setLoading(false);
     });
     }, []);
+
+    useEffect(() => {
+      fetchData();
+  
+      const unsubscribe = NetInfo.addEventListener(state => {
+        if (!isConnected && state.isConnected) {
+          fetchData();
+        }
+        setIsConnected(state.isConnected);
+      });
+  
+      return () => unsubscribe();
+    }, [isConnected]);
+  
 
     console.log('Company ---',company);
     

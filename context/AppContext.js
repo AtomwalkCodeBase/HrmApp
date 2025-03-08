@@ -6,7 +6,7 @@ import { getCompanyInfo } from '../src/services/authServices';
 import axios from "axios";
 import { useRouter } from 'expo-router';
 import NetInfo from '@react-native-community/netinfo';
-import ErrorModal from '../src/components/ErrorModal';
+import NetworkErrorModal from '../src/components/NetworkErrorModal';
 
 const AppContext = createContext();
 
@@ -15,8 +15,6 @@ const AppProvider = ({ children }) => {
     const [userToken, setUserToken] = useState(null);
     const [companyInfo, setCompanyInfo] = useState(null);
     const [dbName, setDbName] = useState(null);
-    const [errorMessage, setErrorMessage] = useState('');
-    const [isErrorVisible, setIsErrorVisible] = useState(false);
     const [isConnected, setIsConnected] = useState(true);
 
     const router = useRouter();
@@ -26,36 +24,29 @@ const AppProvider = ({ children }) => {
         setIsConnected(netState.isConnected);
         return netState.isConnected;
     };
-
-    const showError = (message) => {
-        setErrorMessage(message);
-        setIsErrorVisible(true);
-    };
-
     const onRetry = async () => {
         const networkStatus = await checkNetwork();
         if (networkStatus) {
-            setIsErrorVisible(false);
+            setIsConnected(true); // Update state to reflect network restoration
         }
     };
+    
 
     useEffect(() => {
         const unsubscribe = NetInfo.addEventListener(state => {
             setIsConnected(state.isConnected);
-            if (!state.isConnected) {
-                showError('🚫 No Internet Connection. Please check your network.');
-            }
         });
+
         return () => unsubscribe();
     }, []);
 
     const login = async (username, password) => {
         setIsLoading(true);
         if (!isConnected) {
-            showError('🚫 No Internet. Please check your network connection.');
             setIsLoading(false);
             return;
         }
+
         try {
             if (!username.includes("@")) {
                 const userDetailResponse = await axios.get(`https://www.atomwalk.com/api/get_user_detail/?user_id=${username}`);
@@ -71,8 +62,9 @@ const AppProvider = ({ children }) => {
             setUserToken(userToken);
             router.replace({ pathname: 'home' });
         } catch (err) {
-            showError('❌ Incorrect E-mail ID or password');
+            console.log('Login error:', err);
         }
+
         try {
             const res = await getCompanyInfo();
             const companyInfo = res.data;
@@ -84,8 +76,9 @@ const AppProvider = ({ children }) => {
             setCompanyInfo(companyInfo);
             setDbName(db_name);
         } catch (error) {
-            showError('❌ Failed to fetch company info. Please try again.');
+            console.log('Company Info Fetch Error:', error);
         }
+
         setIsLoading(false);
     };
 
@@ -102,9 +95,9 @@ const AppProvider = ({ children }) => {
     const isLoggedIn = async () => {
         const networkStatus = await checkNetwork();
         if (!networkStatus) {
-            showError('🚫 No Internet. You are offline.');
             return;
         }
+
         try {
             setIsLoading(true);
             const userToken = await AsyncStorage.getItem('userToken');
@@ -120,7 +113,7 @@ const AppProvider = ({ children }) => {
                 setCompanyInfo(JSON.parse(storedCompanyInfo));
             }
         } catch (e) {
-            showError(`Login Status Error: ${e}`);
+            console.log('Login Status Error:', e);
         } finally {
             setIsLoading(false);
         }
@@ -143,12 +136,13 @@ const AppProvider = ({ children }) => {
             setIsLoading
         }}>
             {children}
-            <ErrorModal 
-                visible={isErrorVisible} 
-                message={errorMessage} 
-                onClose={() => setIsErrorVisible(false)}
+            {/* Show Network Error Modal only when disconnected */}
+            <NetworkErrorModal 
+                visible={!isConnected} 
                 onRetry={onRetry} 
+                onNetworkRestore={() => setIsConnected(true)} 
             />
+
         </AppContext.Provider>
     );
 };
