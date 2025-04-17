@@ -1,46 +1,87 @@
 import React from 'react';
-import { Text, Image, Dimensions } from 'react-native';
-import styled from 'styled-components/native';
+import { 
+  Text, 
+  Image, 
+  Dimensions,
+  Platform,
+  StatusBar,
+  StyleSheet,
+  View,
+  TouchableOpacity,
+  SafeAreaView
+} from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
-const HeaderContainer = styled.View`
-  background-color: white;
-  padding: ${height < 700 ? '10px 8px' : '15px 10px'};
-  margin-top: ${height < 806 ? '20px' : '48px'};
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom-width: 1px;
-  border-bottom-color: #ccc;
-  elevation: 2;
-  width: 100%;
-  min-height: ${height < 700 ? '50px' : '60px'};
-`;
-
-// Styled text for the header title
-const HeaderText = styled.Text`
-  font-size: ${width < 360 ? '18px' : '20px'};
-  font-weight: bold;
-`;
-
-// Styled container for the back button
-const BackButton = styled.TouchableOpacity`
-  padding: 5px;
-`;
-
-// Path to the local back icon
-const BackIcon = require('../../assets/images/back_icon.png');
+// Scaling function based on screen width
+const scale = (size) => Math.floor((width / 375) * size);
 
 const HeaderComponent = ({ headerTitle, onBackPress }) => {
   return (
-    <HeaderContainer>
-      <HeaderText>{headerTitle}</HeaderText>
-      <BackButton onPress={onBackPress}>
-        <Image source={BackIcon} style={{ width: 24, height: 24 }} />
-      </BackButton>
-    </HeaderContainer>
+    <>
+      {/* Handle status bar area separately */}
+      {Platform.OS === 'ios' && height > 800 ? (
+        <SafeAreaView style={styles.safeArea} />
+      ) : null}
+      
+      <View style={styles.headerContainer}>
+        <Text style={styles.headerText}>{headerTitle}</Text>
+        <TouchableOpacity 
+          style={styles.backButton} 
+          onPress={onBackPress}
+          activeOpacity={0.7}
+        >
+          <Image 
+            source={require('../../assets/images/back_icon.png')} 
+            style={styles.backIcon} 
+          />
+        </TouchableOpacity>
+      </View>
+    </>
   );
 };
+
+const styles = StyleSheet.create({
+  safeArea: {
+    backgroundColor: 'white',
+  },
+  headerContainer: {
+    backgroundColor: 'white',
+    paddingVertical: scale(15),
+    paddingHorizontal: scale(20),
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+    elevation: 2,
+    width: '100%',
+    minHeight: scale(60),
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    // Handle marginTop based on platform and device
+    ...Platform.select({
+      ios: {
+        marginTop: height > 800 ? 0 : scale(20),
+      },
+      android: {
+        marginTop: StatusBar.currentHeight || scale(20),
+      },
+    }),
+  },
+  headerText: {
+    fontSize: scale(20),
+    fontWeight: 'bold',
+  },
+  backButton: {
+    padding: scale(5),
+  },
+  backIcon: {
+    width: scale(24),
+    height: scale(24),
+  },
+});
 
 export default HeaderComponent;

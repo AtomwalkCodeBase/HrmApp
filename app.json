@@ -2,7 +2,7 @@
   "expo": {
     "name": "hr-app",
     "slug": "hrapp",
-    "version": "1.0.4",
+    "version": "1.0.8",
     "orientation": "portrait",
     "icon": "./assets/images/adaptive-icons.png",
     "scheme": "myapp",

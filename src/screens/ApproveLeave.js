@@ -60,13 +60,22 @@ const LeaveScreen = () => {
   };
 
   const leaveDetails = () => {
-    setIsLoading(true); // Show loader while fetching data
-    getEmpLeave("A").then((res) => {
-      setLeavedata(res.data);
-      setFilteredData(res.data);
-      setIsLoading(false); // Hide loader after data is fetched
-      setRefreshing(false);
-    });
+    setIsLoading(true);
+    getEmpLeave("A")
+      .then((res) => {
+        setLeavedata(res.data);
+        setFilteredData(res.data);
+      })
+
+      
+      .catch((error) => {
+        console.error("Error fetching leave data:", error);
+        // You could also set an error state here to show to the user
+      })
+      .finally(() => {
+        setIsLoading(false);
+        setRefreshing(false);
+      });
   };
 
   useLayoutEffect(() => {

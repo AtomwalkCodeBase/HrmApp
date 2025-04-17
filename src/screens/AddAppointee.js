@@ -31,9 +31,14 @@ const AddAppointee = ({ navigation }) => {
     }, []);
 
     const handleBackPress = () => {
-        router.push('home');
+        router.push({
+            pathname: 'MoreScreen',
+            // params: {
+            //     isManager: true,
+            // },
+        });
     };
-
+    
     const openCamera = async () => {
         const { status } = await ImagePicker.requestCameraPermissionsAsync();
         if (status !== 'granted') {

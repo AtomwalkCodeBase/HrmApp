@@ -1,4 +1,4 @@
-import { addEmpLeave, getEmpLeavedata, addClaim, getEmpClaimdata, getExpenseItemList, getProjectList, getEmpAttendanceData, getEmpHolidayData, empCheckData, processClaim, getClaimApproverList, getfiletotext, getAppointeeList, processAppointee } from "../services/ConstantServies";
+import { addEmpLeave, getEmpLeavedata, addClaim, getEmpClaimdata, getExpenseItemList, getProjectList, getEmpAttendanceData, getEmpHolidayData, empCheckData, processClaim, getClaimApproverList, getfiletotext, getAppointeeList, processAppointee, getEmployeeRequestList, getEmployeeRequestCategory, processEmployeeRequest } from "../services/ConstantServies";
 import { authAxios, authAxiosFilePost, authAxiosPost } from "./HttpMethod";
 
 export function getEmpLeave(leave_type , emp_id, year) {
@@ -64,6 +64,7 @@ export function getEmpLeave(leave_type , emp_id, year) {
     return authAxios(getExpenseItemList)
   }
 
+
   export function getExpenseProjectList() { 
     return authAxios(getProjectList)
   }
@@ -116,4 +117,26 @@ export function getEmpLeave(leave_type , emp_id, year) {
     // console.log('Data to be sent:', data);
     return authAxiosPost(processAppointee, data)
   
+  }
+
+  export function getEmployeeRequest() { 
+    let data = {
+      'emp_id':"EMP-001",
+      'request_sub_type':"Technical Support",
+      'request_type': "H"
+    };
+    return authAxios(getEmployeeRequestList)
+  }
+
+  export function getRequestCategory() { 
+    return authAxios(getEmployeeRequestCategory)
+  }
+
+  export function postEmpRequest(request_data) {
+    // let data = {};
+    // if (claim_data) {
+    //   data = claim_data;
+    // }
+    console.log('Data to be sent:', request_data);
+    return authAxiosFilePost(processEmployeeRequest, request_data)
   }

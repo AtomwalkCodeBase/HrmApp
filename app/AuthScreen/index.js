@@ -57,6 +57,7 @@ const LoginScreen = () => {
     if (!username.includes('@')) {
       try {
         // First API call to get the username if it's not an email
+        console.log("Test")
         const userDetailResponse = await axios.get(`https://www.atomwalk.com/api/get_user_detail/?user_id=${username}`);  
         if (userDetailResponse.status === 200) {
           finalUsername = userDetailResponse.data.username;

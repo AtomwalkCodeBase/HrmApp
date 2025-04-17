@@ -1,6 +1,6 @@
 import { useNavigation, useRouter } from 'expo-router';
 import React, { useEffect, useLayoutEffect, useState } from 'react';
-import { Alert, Linking, SafeAreaView, ScrollView, View } from 'react-native';
+import { Alert, Linking, SafeAreaView, ScrollView, View, StyleSheet,  Modal, Image, Text, TouchableOpacity } from 'react-native';
 import styled from 'styled-components/native';
 import { getProfileInfo } from '../services/authServices';
 import { getClaimApprover, postClaimAction } from '../services/productServices';
@@ -13,84 +13,84 @@ import Loader from '../components/old_components/Loader';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import { MaterialIcons } from '@expo/vector-icons';
 
-const Container = styled.View`
-  flex: 1;
-  padding: 16px;
-  background-color: #ffffff;
-`;
+// const Container = styled.View`
+//   flex: 1;
+//   padding: 16px;
+//   background-color: #ffffff;
+// `;
 
-const ClaimDetailContainer = styled.View`
-  border: 1px solid #a970ff;
-  padding: 16px;
-  border-radius: 12px;
-  margin-bottom: 20px;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-`;
+// const ClaimDetailContainer = styled.View`
+//   border: 1px solid #a970ff;
+//   padding: 16px;
+//   border-radius: 12px;
+//   margin-bottom: 20px;
+//   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+// `;
 
-const ViewButtonContainer = styled.View`
-  /* border: 1px solid #a970ff; */
-  align-items: flex-end;
-  margin-right: -10px;
-  margin-top: -10px;
-  /* padding: 16px; */
-  /* border-radius: 12px; */
-  /* margin-bottom: 20px; */
-  /* box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); */
-`;
+// const ViewButtonContainer = styled.View`
+//   /* border: 1px solid #a970ff; */
+//   align-items: flex-end;
+//   margin-right: -10px;
+//   margin-top: -10px;
+//   /* padding: 16px; */
+//   /* border-radius: 12px; */
+//   /* margin-bottom: 20px; */
+//   /* box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); */
+// `;
 
-const ViewButton = styled.TouchableOpacity`
-  background-color:rgb(216, 233, 250);
-  border: 1px solid rgb(57, 168, 253);
-  padding: 7px 8px;
-  border-radius: 5px;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  /* margin-top: 10px; */
-  shadow-color: #000;
-  shadow-offset: 0px 1px;
-  shadow-opacity: 0.1;
-  shadow-radius: 2px;
-  /* width: 40%; */
-`;
+// const ViewButton = styled.TouchableOpacity`
+//   background-color:rgb(216, 233, 250);
+//   border: 1px solid rgb(57, 168, 253);
+//   padding: 7px 8px;
+//   border-radius: 5px;
+//   flex-direction: row;
+//   align-items: center;
+//   justify-content: center;
+//   /* margin-top: 10px; */
+//   shadow-color: #000;
+//   shadow-offset: 0px 1px;
+//   shadow-opacity: 0.1;
+//   shadow-radius: 2px;
+//   /* width: 40%; */
+// `;
 
-const ClaimText = styled.Text`
-  font-size: 15px;
-  color: #2f2f2f;
-  font-weight: 500;
-`;
+// const ClaimText = styled.Text`
+//   font-size: 15px;
+//   color: #2f2f2f;
+//   font-weight: 500;
+// `;
 
-const ClaimDetailText = styled.Text`
-  font-size: 18px;
-  color: ${(props) => props.color || '#333'};
-  margin-bottom: 8px;
-  font-weight: 500;
-`;
+// const ClaimDetailText = styled.Text`
+//   font-size: 18px;
+//   color: ${(props) => props.color || '#333'};
+//   margin-bottom: 8px;
+//   font-weight: 500;
+// `;
 
-const FillFieldsContainer = styled.View`
-  margin-top: 10px;
-`;
+// const FillFieldsContainer = styled.View`
+//   margin-top: 10px;
+// `;
 
-const ButtonContainer = styled.View`
-  flex-direction: row;
-  justify-content: space-between;
-  margin-top: 20px;
-`;
+// const ButtonContainer = styled.View`
+//   flex-direction: row;
+//   justify-content: space-between;
+//   margin-top: 20px;
+// `;
 
-const ActionButton = styled.TouchableOpacity`
-  flex: 1;
-  background-color: ${(props) => props.color || '#4d88ff'};
-  padding: 15px;
-  margin: 0 5px;
-  border-radius: 12px;
-  align-items: center;
-`;
+// const ActionButton = styled.TouchableOpacity`
+//   flex: 1;
+//   background-color: ${(props) => props.color || '#4d88ff'};
+//   padding: 15px;
+//   margin: 0 5px;
+//   border-radius: 12px;
+//   align-items: center;
+// `;
 
-const ButtonText = styled.Text`
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: bold;
-`;
+// const ButtonText = styled.Text`
+//   color: #ffffff;
+//   font-size: 16px;
+//   font-weight: bold;
+// `;
 
 const ApproveClaimDetails = (props) => {
   const [profile, setProfile] = useState({});
@@ -121,7 +121,7 @@ const ApproveClaimDetails = (props) => {
   const managerData = profile?.emp_data;
 
   const [claimAmount, setClaimAmount] = useState(claim?.expense_amt);
-  const [approveAmount, setApproveAmount] = useState('');
+  const [approveAmount, setApproveAmount] = useState(claim?.expense_amt);
   const [remarks, setRemarks] = useState(claim?.approval_remarks);
   const [selectedManager, setSelectedManager] = useState('');
   const [eligible, setEligible] = useState(false);
@@ -209,6 +209,8 @@ const ApproveClaimDetails = (props) => {
         const maxClaimAmount = managerData.approve_data.find(data => data.max_claim_amt)?.max_claim_amt;
         setClaimGradeLevel(profile?.emp_data?.grade_level);
 
+        // console.log('Manager data-----',profile)
+
         // Check if the manager's grade level is lower than the claim grade level
         if (approveGradeLevel > claimGradeLevel) {
             if (parseFloat(claimAmount) > maxClaimAmount) {
@@ -230,9 +232,16 @@ if (isLoading) {
   return <Loader visible={isLoading} />; // Show loader while data is loading
 }
 
+const formattedClaimId = claim?.claim_id?.length > 7 
+    ? `...${claim.claim_id.slice(-8)}` 
+    : claim?.claim_id;
 
-const handleAction = (res1) => {
+
+const handleAction = async (res1)  => {
+  
+  
   let validationErrors = {};
+
   
   if (res1 === 'APPROVE') {
     if (!approveAmount || approveAmount.trim() === '') {
@@ -259,6 +268,8 @@ const handleAction = (res1) => {
     return; // Stop the function if there are validation errors
   }
 
+  setIsLoading(true);
+
   const claimPayload = {
     approve_by_id: selectedManager,
     approve_amt: `${approveAmount}`,
@@ -267,13 +278,14 @@ const handleAction = (res1) => {
     call_mode: res1,
   };
 
-  postClaimAction(claimPayload)
-    .then((res) => {
-      setShowSuccessModal(true); // Show SuccessModal on successful action
-    })
-    .catch((error) => {
-      Alert.alert('Action Failed', `Failed to ${res1} claim.`);
-    });
+  try {
+    await postClaimAction(claimPayload);
+    setShowSuccessModal(true);
+  } catch (error) {
+    Alert.alert('Action Failed', `Failed to ${res1} claim.`);
+  } finally {
+    setIsLoading(false);
+  }
 };
 
 if (selectedImageUrl) {
@@ -292,32 +304,30 @@ if (selectedImageUrl) {
   );
 }
 
-  return (
-    <>
-      <HeaderComponent headerTitle={"Approve" + " " + `(${claim?.claim_id})`} onBackPress={handleBackPress} />
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <Container>
-          <ClaimDetailContainer>
-          {claim.submitted_file_1 && (
-              <ViewButtonContainer>
-                <ViewButton onPress={() => handleViewFile(claim.submitted_file_1)}>
-                  <MaterialIcons name="visibility" size={20} color="#333" />
-                  <ClaimText style={{ marginLeft: 5 }}>View File</ClaimText>
-                </ViewButton>
-                </ViewButtonContainer>
-              )}
-            <ClaimDetailText>Expense Item: {claim?.item_name}</ClaimDetailText>
-            <ClaimDetailText>Expense Date: {claim?.expense_date}</ClaimDetailText>
-            <ClaimDetailText>Emp: {claim?.employee_name}</ClaimDetailText>
-            <ClaimDetailText>Claim Amount: {claim?.expense_amt}</ClaimDetailText>
-            <ClaimDetailText>Claim Remark: {claim?.remarks}</ClaimDetailText>
+return (
+  <>
+  <HeaderComponent headerTitle={`Approve (${formattedClaimId})`} onBackPress={handleBackPress} />
+  <SafeAreaView style={styles.container}>
+    
+    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+      <View style={styles.claimDetailContainer}>
+        {claim.submitted_file_1 && (
+          <View style={styles.viewButtonContainer}>
+            <TouchableOpacity style={styles.viewButton} onPress={() => handleViewFile(claim.submitted_file_1)}>
+              <MaterialIcons name="visibility" size={20} color="#333" />
+              <Text style={styles.claimText}>View File</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        <Text style={styles.claimDetailText}>Expense Item: {claim?.item_name}</Text>
+        <Text style={styles.claimDetailText}>Expense Date: {claim?.expense_date}</Text>
+        <Text style={styles.claimDetailText}>Emp: {claim?.employee_name}</Text>
+        <Text style={styles.claimDetailText}>Claim Amount: {claim?.expense_amt}</Text>
+        <Text style={styles.claimDetailText}>Claim Remark: {claim?.remarks}</Text>
+      </View>
 
-            
-          </ClaimDetailContainer>
-          
-
-          <FillFieldsContainer>
-          <AmountInput
+      <View style={styles.fillFieldsContainer}>
+      <AmountInput
             label="Approve Amount:"
             claimAmount={approveAmount}
             setClaimAmount={setApproveAmount}
@@ -328,7 +338,7 @@ if (selectedImageUrl) {
               setRemark={setRemarks}
               error={errors.remarks}
             />
-            {eligible && (
+        {eligible && (
               <>
               <DropdownPicker
                 label="Select Manager"
@@ -343,28 +353,25 @@ if (selectedImageUrl) {
               />
               </>
             )}
-          </FillFieldsContainer>
+      </View>
 
-          <ButtonContainer>
-            <ActionButton color="#ff5722" onPress={() => handleAction('REJECT')}>
-              <ButtonText>Reject Claim</ButtonText>
-            </ActionButton>
-            {callType === 'Approve' && (
-              <ActionButton color="#06BF63" onPress={() => handleAction('APPROVE')}>
-                <ButtonText>Approve Claim</ButtonText>
-              </ActionButton>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={[styles.actionButton, { backgroundColor: '#ff5722' }]} onPress={() => handleAction('REJECT')}>
+          <Text style={styles.buttonText}>Reject Claim</Text>
+        </TouchableOpacity>
+        {callType === 'Approve' && (
+          <TouchableOpacity style={[styles.actionButton, { backgroundColor: '#06BF63' }]} onPress={() => handleAction('APPROVE')}>
+            <Text style={styles.buttonText}>Approve Claim</Text>
+          </TouchableOpacity>
+        )}
+        {callType === 'Return' && (
+              <TouchableOpacity style={[styles.actionButton, { backgroundColor: '#ffa500' }]} onPress={() => handleAction('SEND_BACK')}>
+              <Text style={styles.buttonText}>Back to Claimant</Text>
+            </TouchableOpacity>
             )}
-            {callType === 'Return' && (
-              <ActionButton color="#ffa500" onPress={() => handleAction('SEND_BACK')}>
-                <ButtonText>Back to Claimant</ButtonText>
-              </ActionButton>
-            )}
-          </ButtonContainer>
-        </Container>
-      </ScrollView>
-
-      {/* Success Modal */}
-      {showSuccessModal && (
+      </View>
+    </ScrollView>
+    {showSuccessModal && (
         <SuccessModal
           isVisible={showSuccessModal}
           onClose={() => {
@@ -373,9 +380,77 @@ if (selectedImageUrl) {
           }}
           message="Claim action updated successfully."
         />
-      )}
-    </>
-  );
+    )}
+  </SafeAreaView>
+  </>
+);
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: '#ffffff',
+  },
+  claimDetailContainer: {
+    borderWidth: 1,
+    borderColor: '#a970ff',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    // elevation: 3,
+  },
+  viewButtonContainer: {
+    alignItems: 'flex-end',
+    marginRight: -10,
+    marginTop: -10,
+  },
+  viewButton: {
+    backgroundColor: 'rgb(216, 233, 250)',
+    borderWidth: 1,
+    borderColor: 'rgb(57, 168, 253)',
+    paddingVertical: 7,
+    paddingHorizontal: 8,
+    borderRadius: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  claimText: {
+    fontSize: 15,
+    color: '#2f2f2f',
+    fontWeight: '500',
+  },
+  claimDetailText: {
+    fontSize: 18,
+    color: '#333',
+    marginBottom: 8,
+    fontWeight: '500',
+  },
+  fillFieldsContainer: {
+    marginTop: 10,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+  },
+  actionButton: {
+    flex: 1,
+    padding: 15,
+    marginHorizontal: 5,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+});
 
 export default ApproveClaimDetails;

@@ -23,6 +23,9 @@ export default function RootLayout() {
       <Stack.Screen name="IdCard/index" options={{headerShown:false}}/>
       <Stack.Screen name="AppointeeList/index" options={{headerShown:false}}/>
       <Stack.Screen name="AddAppointee/index" options={{headerShown:false}}/>
+      <Stack.Screen name="RequestScr/index" options={{headerShown:false}}/>
+      <Stack.Screen name="HelpScr/index" options={{headerShown:false}}/>
+      <Stack.Screen name="MoreScreen/index" options={{headerShown:false}}/>
     </Stack>
     
     </AppProvider>

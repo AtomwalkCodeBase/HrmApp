@@ -107,7 +107,7 @@ const TabText = styled.Text`
 
 const TabTextActive = styled(TabText)`
   color: blue;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: bold;
   margin-bottom: 0px;
 `;
@@ -253,26 +253,26 @@ const LeaveScreen = () => {
           <TabButton onPress={() => setSelectedTab('My Cancel Leave')}>
             {selectedTab === 'My Cancel Leave' ? (
               <TabButtonActive>
-                <TabTextActive>My Cancel Leave</TabTextActive>
+                <TabTextActive>Canceled Leave</TabTextActive>
               </TabButtonActive>
             ) : (
-              <TabText>My Cancel Leave</TabText>
+              <TabText>Canceled Leave</TabText>
             )}
           </TabButton>
         </TabContainer>
 
         {loading ? (
-          // <ActivityIndicator size="large" color="#4d88ff" style={{ marginTop: 20 }} />
           <Loader visible={loading} />
         ) : (
-          <ApplicationList>
-            <FlatList
-              data={[...leaveData].reverse()}
-              renderItem={renderLeaveItem}
-              keyExtractor={(item) => item.id.toString()}
-              ListEmptyComponent={<EmptyMessage data={`leave`} />}
-            />
-          </ApplicationList>
+          <FlatList
+            data={[...leaveData].reverse()}
+            renderItem={renderLeaveItem}
+            keyExtractor={(item) => item.id.toString()}
+            ListEmptyComponent={<EmptyMessage data={`leave`} />}
+            contentContainerStyle={{ paddingBottom: responsiveMarginBottom }}
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
+          />
         )}
         <ApplyButton onPress={() => handlePress(leaveData && leaveData[0]?.emp_data)} buttonText="Apply Leave" />
 

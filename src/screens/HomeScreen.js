@@ -230,6 +230,9 @@ const HomePage = () => {
   
 
     console.log('Company ---',company);
+
+    console.log("Home profi=--=",profile)
+
     
     const handlePressLeave = () => {
       router.push('leave');
@@ -260,15 +263,30 @@ const HomePage = () => {
       });
     };
 
-    const handleAppointee = () => {
-      router.push({
-        pathname: 'AddAppointee' 
-      });
-    };
+    // const handlePressRequest = () => {
+    //   router.push({
+    //     pathname: 'RequestScr' 
+    //   });
+    // };
+
+    // const handleAppointee = () => {
+    //   router.push({
+    //     pathname: 'AddAppointee' 
+    //   });
+    // };
 
     const handlePressAttendance = () => {
       router.push('attendance');
     };
+
+    const handleMorePress = () => {  
+      router.push({
+        pathname: 'MoreScreen',
+        // params: {
+        //   isManager,
+        // },
+      });
+  };
 
 
   return (
@@ -330,18 +348,18 @@ const HomePage = () => {
         </MenuItem>
         }
 
-        <MenuItemLast onPress={() => handlePressHoliday()}>
+        <MenuItem onPress={() => handlePressHoliday()}>
         <Image source={require('../../assets/images/holiday.png')} style={{ width: 50, height: 50 }} />
           <MenuText>Holiday</MenuText>
-        </MenuItemLast>
+        </MenuItem>
 
-        {isManager&&
-          <MenuItemLast onPress={() => handleAppointee()}>
-           <Image source={require('../../assets/images/AClaim.png')} style={{ width: 50, height: 50 }} />
-             <MenuText>Add Appointee</MenuText>
-           </MenuItemLast>
-           }
 
+           
+             <MenuItemLast onPress={() => handleMorePress()}>
+              <Image source={require('../../assets/images/MoreOption.png')} style={{ width: 50, height: 50 }} />
+                <MenuText>More</MenuText>
+              </MenuItemLast>
+   
 
        </MenuWrapper>
 

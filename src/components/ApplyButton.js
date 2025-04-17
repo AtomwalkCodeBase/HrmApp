@@ -1,34 +1,59 @@
 import React from 'react';
-import styled from 'styled-components/native';
+import { 
+  StyleSheet, 
+  TouchableOpacity, 
+  Text, 
+  Dimensions, 
+  Platform 
+} from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { Dimensions, Platform } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
-const ApplyClaimButtonContainer = styled.TouchableOpacity`
-  background-color: #4d88ff;
-  padding: ${Platform.OS === 'ios' ? '12px 16px' : '10px 14px'};
-  border-radius: 25px;
-  align-self: center;
-  margin-bottom: ${width > 400 ? '20px' : '16px'};
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  width: ${width > 412 ? '90%' : '100%'};
-`;
+const ApplyButton = ({ onPress, buttonText, icon }) => {
+  // Responsive style calculations
+  const buttonPadding = Platform.OS === 'ios' ? 12 : 10;
+  const buttonMarginBottom = width > 400 ? 24 : 10;
+  const buttonWidth = width > 412 ? '90%' : '100%';
+  
+  const iconSize = width > 400 ? 26 : 24;
+  const textFontSize = width > 400 ? 18 : 16;
 
-const ButtonText = styled.Text`
-  color: #fff;
-  font-size: ${width > 400 ? '18px' : '16px'};
-  font-weight: 600;
-  margin-left: 8px;
-`;
+  return (
+    <TouchableOpacity 
+      style={[
+        styles.buttonContainer,
+        {
+          paddingVertical: buttonPadding,
+          paddingHorizontal: buttonPadding + 4,
+          marginBottom: buttonMarginBottom,
+          width: buttonWidth
+        }
+      ]}
+      onPress={onPress}
+    >
+      <MaterialIcons name={icon} size={iconSize} color="#fff" />
+      <Text style={[styles.buttonText, { fontSize: textFontSize }]}>
+        {buttonText}
+      </Text>
+    </TouchableOpacity>
+  );
+};
 
-const ApplyButton = ({ onPress, buttonText, icon }) => (
-  <ApplyClaimButtonContainer onPress={onPress}>
-    <MaterialIcons name={icon} size={width > 400 ? 26 : 24} color="#fff" />
-    <ButtonText>{buttonText}</ButtonText>
-  </ApplyClaimButtonContainer>
-);
+const styles = StyleSheet.create({
+  buttonContainer: {
+    backgroundColor: '#4d88ff',
+    borderRadius: 25,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+});
 
 export default ApplyButton;

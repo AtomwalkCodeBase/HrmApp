@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import styled from 'styled-components/native';
 import { Modal, View, Image, Text, TouchableOpacity } from 'react-native';
 
@@ -49,6 +49,16 @@ const CloseButtonText = styled.Text`
 `;
 
 const SuccessModal = ({ visible, onClose, message }) => {
+  useEffect(() => {
+    if (visible) {
+      const timer = setTimeout(() => {
+        onClose();
+      }, 5000); // Auto close after 10 seconds
+      
+      return () => clearTimeout(timer);
+    }
+  }, [visible, onClose]);
+
   return (
     <ModalContainer
       animationType="slide"

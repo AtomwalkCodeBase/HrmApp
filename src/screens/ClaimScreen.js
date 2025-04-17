@@ -110,6 +110,8 @@ const ClaimScreen = ({ headerTitle = "My Claim", buttonLabel = "Apply Claim", fe
     />
   );
 
+  console.log("Claim===",)
+
   if (selectedImageUrl) {
     return (
       <SafeAreaView style={{ flex: 1 }}>
