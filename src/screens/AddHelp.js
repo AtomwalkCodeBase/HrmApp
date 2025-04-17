@@ -62,6 +62,7 @@ const AddHelp = (props) => {
     getRequestCategory()
       .then((res) => {
         setRequestCategories(res.data);
+        // console.log("sdjcjbbsjk",res.data);
         const filtered = res.data.filter(category => category.request_type === call_type);
         setFilteredCategories(filtered);
       })
@@ -164,6 +165,8 @@ const AddHelp = (props) => {
       console.log('Form Data==',formData)
     }
   };
+
+  console.log("Category===",requestCategories);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>

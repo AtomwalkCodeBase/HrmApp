@@ -89,7 +89,7 @@ const Helpform = () => {
 
   const handleBackPress = () => {
     router.push({
-      pathname: request_type === "H" ? "HelpScr" : "RequestScr",
+      pathname: "MoreScreen",
       params: { empId },
     });
   };
@@ -127,7 +127,7 @@ const Helpform = () => {
 
     const formData = new FormData();
     formData.append("emp_id", empId);
-    formData.append("request_category_id", parsedProduct?.request_category_id);
+    formData.append("request_category_id",  "0");
     formData.append("call_mode", "RESOLVED");
     formData.append("request_type", parsedProduct?.request_type);
     formData.append("request_id", parsedProduct?.request_id);
