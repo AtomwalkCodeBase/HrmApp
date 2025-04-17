@@ -25,7 +25,7 @@ const responsiveWidth = (percentage) => width * (percentage / 100);
 const responsiveHeight = (percentage) => height * (percentage / 100);
 const responsiveFontSize = (percentage) => Math.round(width * (percentage / 100));
 
-const HelpScreen = (props) => {
+const RequestScreen = (props) => {
   const router = useRouter();
   const call_type = 'R';
   const [requestCategories, setRequestCategories] = useState([]);
@@ -220,4 +220,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HelpScreen;
+export default RequestScreen;
