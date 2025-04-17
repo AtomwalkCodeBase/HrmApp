@@ -114,11 +114,7 @@ const ProfileScreen = () => {
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.logoutButton} 
-          onPress={async () => {
-                                await AsyncStorage.removeItem('userPin');
-                                await AsyncStorage.removeItem('authToken');  // Add other keys if needed
-                                logout();
-                              }}>
+          onPress={() => {logout()}}>
             <MaterialCommunityIcons name="logout" size={24} color="#d9534f" />
             <Text style={styles.logoutText}>Log Out</Text>
           </TouchableOpacity>
