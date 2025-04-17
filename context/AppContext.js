@@ -82,15 +82,19 @@ const AppProvider = ({ children }) => {
         setIsLoading(false);
     };
 
-    const logout = async () => {
+    const logout = () => {
         setIsLoading(true);
-        await AsyncStorage.clear();
+        AsyncStorage.removeItem('userToken');
+        AsyncStorage.removeItem('companyInfo');
+        AsyncStorage.removeItem('dbName');
         setUserToken(null);
-        setCompanyInfo(null);
+        setCompanyInfo([]);
         setDbName(null);
         setIsLoading(false);
+        // setError('')
         router.replace('AuthScreen');
     };
+
 
     const isLoggedIn = async () => {
         const networkStatus = await checkNetwork();
