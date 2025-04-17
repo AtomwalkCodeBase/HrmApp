@@ -3,7 +3,7 @@ import { View, Text, Image, StatusBar, TouchableOpacity, Dimensions, Animated, E
 import styled from 'styled-components/native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { MaterialIcons, Ionicons, Feather, FontAwesome } from '@expo/vector-icons';
+import { MaterialIcons, Ionicons, Feather, FontAwesome, AntDesign } from '@expo/vector-icons';
 import HeaderComponent from '../components/HeaderComponent';
 import { getProfileInfo } from '../services/authServices';
 import Loader from '../components/old_components/Loader';
@@ -157,6 +157,15 @@ const MorePage = (props) => {
     });
 };
 
+  const handlePressResolve = () => {  
+    router.push({
+      pathname: 'ResolveHelp&Request',
+      // params: {
+      //   empId,
+      // },
+    });
+};
+
   
   
 
@@ -194,6 +203,13 @@ const menuItems = [
     subTitle: "Add your request in Request",
     icon: <Ionicons name="settings-outline" size={24} color="#7e57c2" />,
     action: handlePressRequest,
+    show: true
+  },
+  {
+    title: "Resolve Help & request",
+    subTitle: "Resolve your Help & request",
+    icon: <AntDesign name="customerservice" size={24} color="#7e57c2" />,
+    action: handlePressResolve,
     show: true
   },
   // {

@@ -14,9 +14,9 @@ const ModalComponent = ({ isVisible, leave, claim, helpRequest, onClose }) => {
                claim ? 'Claim Details' : 
                helpRequest ? 'Request Details' : ''}
             </ModalTitle>
-            <CloseButton onPress={onClose}>
+            {/* <CloseButton onPress={onClose}>
               <MaterialIcons name="close" size={24} color="#6B7280" />
-            </CloseButton>
+            </CloseButton> */}
           </ModalHeader>
 
           <ModalBody>

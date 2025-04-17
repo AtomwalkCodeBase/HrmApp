@@ -12,6 +12,7 @@ import styled from 'styled-components/native';
 import { getProfileInfo } from '../services/authServices';
 import { colors } from '../Styles/appStyle';
 import HeaderComponent from '../components/HeaderComponent';
+import ErrorModal from '../components/ErrorModal';
 
 const Container = styled.ScrollView`
   flex: 1;
@@ -27,6 +28,7 @@ const ApplyLeave = (props) => {
   const [numOfDays, setNumOfDays] = useState(0);
   const [errors, setErrors] = useState({});
   const [profile, setProfile] = useState({});
+  
   const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
   const [isErrorModalVisible, setIsErrorModalVisible] = useState(false); // Error modal visibility state
   const [errorMessage, setErrorMessage] = useState('');
@@ -110,12 +112,17 @@ const ApplyLeave = (props) => {
       })
       .catch((error) => {
         setIsLoading(false); // Hide loader on error
-        Alert.alert(
-          'Leave Application Failed',
-          'Please verify the selected dates. Either the dates are already approved or fall on a holiday.'
-        );
-        console.log('Error==',error)
-      });
+      
+        const msg =
+          error?.response?.data?.message ||
+          error?.message ||
+          'Please verify the selected dates. Either the dates are already applied or fall on a holiday.';
+      
+        setErrorMessage(msg);
+        setIsErrorModalVisible(true);
+      
+        console.log('Error==', msg);
+      });      
   };
 
   return (
@@ -170,6 +177,14 @@ const ApplyLeave = (props) => {
           router.push('leave'); // Navigate back to leave page
         }} 
       />
+      {/* Error Modal */}
+<ErrorModal
+  visible={isErrorModalVisible}
+  message={errorMessage}
+  onClose={() => setIsErrorModalVisible(false)}
+  
+/>
+
     </SafeAreaView>
   );
 };

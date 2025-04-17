@@ -26,6 +26,7 @@ export default function RootLayout() {
       <Stack.Screen name="RequestScr/index" options={{headerShown:false}}/>
       <Stack.Screen name="HelpScr/index" options={{headerShown:false}}/>
       <Stack.Screen name="MoreScreen/index" options={{headerShown:false}}/>
+      <Stack.Screen name="ResolveHelp&Request/index" options={{headerShown:false}}/>
     </Stack>
     
     </AppProvider>

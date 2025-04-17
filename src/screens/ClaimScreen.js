@@ -134,7 +134,7 @@ const ClaimScreen = ({ headerTitle = "My Claim", buttonLabel = "Apply Claim", fe
         <FlatList
           data={[...claimData].reverse()}
           renderItem={renderClaimItem}
-          keyExtractor={(item) => item.claim_id.toString()}
+          keyExtractor={(item) => item.id.toString()}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 100 }}
           ListEmptyComponent={<EmptyMessage data={`claim`} />}
