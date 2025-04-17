@@ -135,7 +135,7 @@ const Helpform = () => {
     formData.append("remarks", remark);
 
     if (fileUri) {
-      formData.append("submitted_file_1", {
+      formData.append("uploaded_file", {
         uri: fileUri,
         name: fileName || "supporting_document.jpg",
         type: fileMimeType || "image/jpeg",
