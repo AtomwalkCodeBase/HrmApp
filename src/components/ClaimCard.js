@@ -17,6 +17,7 @@ const ClaimCardContainer = styled.TouchableOpacity`
     switch(props.status) {
       case 'A': return '#4CAF50'; // Approved - Green
       case 'S': return '#2196F3'; // Submitted - Blue
+      case 'F': return '#9C27B0'; // Forwarded - Purple
       case 'R': return '#F44336'; // Rejected - Red
       case 'B': return '#FF9800'; // Back to claimant - Orange
       default: return '#9E9E9E'; // Default - Gray
@@ -41,6 +42,7 @@ const StatusBadge = styled.View`
     switch(props.status) {
       case 'A': return '#E8F5E9'; // Approved
       case 'S': return '#E3F2FD'; // Submitted
+      case 'F': return '#F3E5F5'; // Forwarded
       case 'R': return '#FFEBEE'; // Rejected
       case 'B': return '#FFF3E0'; // Back to claimant
       default: return '#F5F5F5'; // Default
@@ -57,6 +59,7 @@ const StatusText = styled.Text`
     switch(props.status) {
       case 'A': return '#2E7D32'; // Approved
       case 'S': return '#1565C0'; // Submitted
+      case 'F': return '#7B1FA2'; // Forwarded
       case 'R': return '#C62828'; // Rejected
       case 'B': return '#EF6C00'; // Back to claimant
       default: return '#424242'; // Default
@@ -137,13 +140,15 @@ const ClaimCard = ({ claim, onPress, onViewFile, getStatusText }) => {
             name={
               status === 'A' ? 'check-circle' : 
               status === 'R' ? 'x-circle' : 
-              status === 'B' ? 'corner-up-left' : 'clock'
+              status === 'B' ? 'corner-up-left' : 
+              status === 'F' ? 'share-2' : 'clock'
             } 
             size={14} 
             color={
               status === 'A' ? '#2E7D32' : 
               status === 'R' ? '#C62828' : 
-              status === 'B' ? '#EF6C00' : '#1565C0'
+              status === 'B' ? '#EF6C00' : 
+              status === 'F' ? '#7B1FA2' : '#1565C0'
             } 
           />
           <StatusText status={status}>{statusText}</StatusText>
@@ -176,9 +181,19 @@ const ClaimCard = ({ claim, onPress, onViewFile, getStatusText }) => {
         </ViewFileButton>
       )}
 
-      {claim.approved_date && (
+      {(status === 'A' || status === 'R') && claim.approved_date && (
         <ApprovalInfo>
-          <ApprovalText>Approved by {claim.approved_by} on {claim.approved_date}</ApprovalText>
+          <ApprovalText>
+            {status === 'A' ? 'Approved' : 'Rejected'} by {claim.approved_by} on {claim.approved_date}
+          </ApprovalText>
+        </ApprovalInfo>
+      )}
+
+      {status === 'F' && claim.approved_by && (
+        <ApprovalInfo>
+          <ApprovalText>
+            Forwarded by {claim.approved_by}
+          </ApprovalText>
         </ApprovalInfo>
       )}
     </ClaimCardContainer>
