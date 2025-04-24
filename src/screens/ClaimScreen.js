@@ -52,7 +52,10 @@ const ClaimScreen = ({ headerTitle = "My Claim", buttonLabel = "Apply Claim", fe
     if (selectedImageUrl) {
       setSelectedImageUrl(null);
     } else {
-      router.push('home');
+      router.navigate({
+        pathname: 'home',
+        params: { screen: 'HomePage' }
+      });
     }
   };
 

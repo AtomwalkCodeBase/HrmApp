@@ -234,8 +234,8 @@ const AddHelp = (props) => {
         visible={isSuccessModalVisible} 
         onClose={() => {
           setIsSuccessModalVisible(false);
-          router.push('ClaimScreen');
-        }} 
+          handleBackPress();
+        }}  
         message={call_type === 'H' 
           ? "Help request submitted successfully!" 
           : "Request submitted successfully!"}

@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, StatusBar, TouchableOpacity, Dimensions, Animated, Easing } from 'react-native';
+import { View, Text, TouchableOpacity, Dimensions } from 'react-native';
 import styled from 'styled-components/native';
 import { useRouter } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
-import { MaterialIcons, Ionicons, Feather, FontAwesome, AntDesign } from '@expo/vector-icons';
+import { MaterialIcons, Ionicons, Feather } from '@expo/vector-icons';
 import HeaderComponent from '../components/HeaderComponent';
 import { getProfileInfo } from '../services/authServices';
 import Loader from '../components/old_components/Loader';
@@ -26,7 +25,7 @@ const MenuContainer = styled.ScrollView.attrs({
   padding: 15px;
 `;
 
-const MenuItem = styled(Animated.createAnimatedComponent(TouchableOpacity))`
+const MenuItem = styled(TouchableOpacity)`
   width: 100%;
   height: ${height * 0.085}px;
   background-color: #fff;
@@ -68,12 +67,6 @@ const MenuSubText = styled.Text`
   margin-top: 2px;
 `;
 
-const Divider = styled.View`
-  height: 1px;
-  background-color: #eee;
-  margin: 15px 0;
-`;
-
 const SectionTitle = styled.Text`
   font-size: ${width * 0.038}px;
   color: #999;
@@ -82,136 +75,97 @@ const SectionTitle = styled.Text`
   padding-left: 5px;
 `;
 
-const MorePage = (props) => {
+const MorePage = () => {
   const router = useRouter();
   const [isManager, setIsManager] = useState(false);
-  // const [profile, setProfile] = useState([]);
   const [empId, setEmpId] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [animations] = useState(() => 
-    Array(5).fill().map(() => new Animated.Value(0))
-  );
 
-  useEffect(()=>{
+  useEffect(() => {
     setLoading(true);
     getProfileInfo()
-    .then((res) => {
+      .then((res) => {
         // setProfile(res?.data?.emp_data);
         setEmpId(res?.data?.emp_data?.emp_id);
         setIsManager(res.data.user_group.is_manager);
         setLoading(false);
-    })
-    .catch((error) => {
+      })
+      .catch((error) => {
         setLoading(false);
-        // setIsManager(false);
-    });
-  },[])
-
-  // console.log("Emp Id====",empId);
-
-  useEffect(() => {
-    // setIsManager(props?.data?.isManager === "true" || props?.data?.isManager === true);
-    
-    // setEmpId(profile?.emp_id);
-    // Staggered animation for menu items
-    animations.forEach((anim, index) => {
-      Animated.timing(anim, {
-        toValue: 1,
-        duration: 300,
-        delay: index * 100,
-        easing: Easing.out(Easing.quad),
-        useNativeDriver: true
-      }).start();
-    });
-  }, [props?.data?.isManager]);
-
-  console.log("Is manager==",isManager)
-
-  // const handlePressRequest = () => {
-  //   router.push({
-  //     pathname: 'RequestScr' 
-  //   });
-  // };
-
-  // const handlePressHelp = () => {
-  //   router.push({
-  //     pathname: 'HelpScr' 
-  //   });
-  // };
+      });
+  }, []);
 
   const handlePressHelp = () => {  
     router.push({
       pathname: 'HelpScr',
-      params: {
-        empId,
-      },
+      params: { empId },
     });
-};
+  };
 
   const handlePressRequest = () => {  
     router.push({
       pathname: 'RequestScr',
-      params: {
-        empId,
-      },
+      params: { empId },
     });
-};
+  };
+  
+//   const handlePressResolve = () => {  
+//     router.push({
+//       pathname: 'ResolveHelp&Request',
+//       // params: {
+//       //   empId,
+//       // },
+//     });
+// };
 
-  const handlePressResolve = () => {  
-    router.push({
-      pathname: 'ResolveHelp&Request',
-      // params: {
-      //   empId,
-      // },
+const handlePressProfile = () => {
+  router.push('profile');
+};
+  
+  const handleBackPress = () => {
+    router.navigate({
+      pathname: 'home',
+      params: { screen: 'HomePage' }
     });
-};
-
-  
-  
-
-  // const handlePressSettings = () => router.push('settings');
-  // const handlePressSupport = () => router.push('support');
-  const handlePressProfile = () => router.push('profile');
-  const handleBackPress = () => router.push('home');
+  };
   const handleAppointee = () => router.push({ pathname: 'AddAppointee' });
 
-  // Inside your menu items array
-const menuItems = [
-  {
-    title: "My Profile",
-    subTitle: "View and edit your profile",
-    icon: <Ionicons name="person-outline" size={24} color="#7e57c2" />,
-    action: handlePressProfile,
-    show: true // Always show
-  },
-  {
-    title: "Add Appointee",
-    subTitle: "Manage team members",
-    icon: <MaterialIcons name="person-add" size={24} color="#7e57c2" />,
-    action: handleAppointee,
-    show: isManager // Only show if isManager is true
-  },
-  {
-    title: "Help Desk",
-    subTitle: "Raise your consern at Help Desk",
-    icon: <Feather name="help-circle" size={24} color="#7e57c2" />,
-    action: handlePressHelp,
-    show: true
-  },
-  {
-    title: "Request Desk",
-    subTitle: "Add your request in Request",
-    icon: <Ionicons name="settings-outline" size={24} color="#7e57c2" />,
-    action: handlePressRequest,
-    show: true
-  },
-  {
-    title: "Resolve Help & request",
-    subTitle: "Resolve your Help & request",
-    icon: <AntDesign name="customerservice" size={24} color="#7e57c2" />,
-    action: handlePressResolve,
-    show: true
-  },
+  const menuItems = [
+    {
+      title: "My Profile",
+      subTitle: "View and edit your profile",
+      icon: <Ionicons name="person-outline" size={24} color="#7e57c2" />,
+      action: handlePressProfile,
+      show: true
+    },
+    {
+      title: "Add Appointee",
+      subTitle: "Manage team members",
+      icon: <MaterialIcons name="person-add" size={24} color="#7e57c2" />,
+      action: handleAppointee,
+      show: isManager
+    },
+    {
+      title: "Help Desk",
+      subTitle: "Raise your concern at Help Desk",
+      icon: <Feather name="help-circle" size={24} color="#7e57c2" />,
+      action: handlePressHelp,
+      show: true
+    },
+    {
+      title: "Request Desk",
+      subTitle: "Add your request in Request",
+      icon: <Ionicons name="settings-outline" size={24} color="#7e57c2" />,
+      action: handlePressRequest,
+      show: true
+    },
+  // {
+  //   title: "Resolve Help & request",
+  //   subTitle: "Resolve your Help & request",
+  //   icon: <AntDesign name="customerservice" size={24} color="#7e57c2" />,
+  //   action: handlePressResolve,
+  //   show: true
+  // },
   // {
   //   title: "Logout",
   //   subTitle: "Sign out of your account",
@@ -223,7 +177,6 @@ const menuItems = [
 
   return (
     <Container>
-      {/* <StatusBar barStyle={'light-content'} backgroundColor={'#7e57c2'} /> */}
       <Loader visible={loading} />
       <HeaderComponent 
         headerTitle="More Options" 
@@ -233,19 +186,11 @@ const menuItems = [
       
       <MenuContainer>
         <SectionTitle>ACCOUNT</SectionTitle>
+        
         {menuItems.slice(0, isManager ? 2 : 1).map((item, index) => (
           <MenuItem 
             key={`account-${index}`}
             onPress={item.action}
-            style={{
-              opacity: animations[index],
-              transform: [{
-                translateX: animations[index].interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [-50, 0]
-                })
-              }]
-            }}
             activeOpacity={0.7}
           >
             <MenuIconContainer>
@@ -260,19 +205,11 @@ const menuItems = [
         ))}
         
         <SectionTitle>APP</SectionTitle>
+        
         {menuItems.slice(isManager ? 2 : 1).map((item, index) => (
           <MenuItem 
             key={`app-${index}`}
             onPress={item.action}
-            style={{
-              opacity: animations[index + (isManager ? 2 : 1)],
-              transform: [{
-                translateX: animations[index + (isManager ? 2 : 1)].interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [-50, 0]
-                })
-              }]
-            }}
             activeOpacity={0.7}
           >
             <MenuIconContainer>

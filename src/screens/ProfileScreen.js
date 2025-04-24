@@ -21,7 +21,6 @@ const ProfileScreen = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const router = useRouter();
-  const navigation = useNavigation();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -46,7 +45,7 @@ const ProfileScreen = () => {
     fetchUserPin();
   }, []);
 
-  const handleBackPress = () => navigation.goBack();
+  const handleBackPress = () => router.back();
   const handlePressPassword = () => router.push({ pathname: 'ResetPassword' });
   const handleQRPress = () => setIsModalVisible(true);
   const handleCloseModal = () => setIsModalVisible(false);

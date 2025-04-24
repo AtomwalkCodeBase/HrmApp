@@ -124,6 +124,7 @@ const LeaveScreen = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false); // Loader state
+  const [totalLeaveSum, setTotalLeaveSum] = useState(0);
 
   const generateRandomValue = () => {
     return Math.floor(Math.random() * 100);
@@ -154,26 +155,59 @@ const LeaveScreen = () => {
     leaveDetails();
   }, [selectedTab, randomValue]);
 
+  // const leaveDetails = () => {
+  //   setLoading(true);
+  //   getEmpLeave(selectedTab === 'My Leave' ? 'EL' : selectedTab === 'My WFH' ? 'WH' : 'EL')
+  //     .then((res) => {
+  //       // Filter out Optional Holidays (OH) from all tabs
+  //       const filteredData = res.data.filter((leave) => leave.leave_type !== 'OH');
+        
+  //       // Apply additional filters based on selected tab
+  //       const tabFilteredData = selectedTab === 'My Leave'
+  //         ? filteredData.filter((leave) => leave.status_display !== 'Cancelled')
+  //         : selectedTab === 'My Cancel Leave'
+  //         ? filteredData.filter((leave) => leave.status_display === 'Cancelled')
+  //         : filteredData;
+          
+  //       setLeaveData(tabFilteredData);
+  //     })
+  //     .finally(() => setLoading(false));
+  // };
+  
   const leaveDetails = () => {
-    setLoading(true); // Set loading to true at the start of data fetching
+    setLoading(true);
     getEmpLeave(selectedTab === 'My Leave' ? 'EL' : selectedTab === 'My WFH' ? 'WH' : 'EL')
       .then((res) => {
-        const filteredData = selectedTab === 'My Leave'
-          ? res.data.filter((leave) => leave.status_display !== 'Cancelled')
+        // First filter out Optional Holidays (OH)
+        const allNonOHLeaves = res.data.filter((leave) => leave.leave_type !== 'OH');
+        
+        // Calculate total leave sum (excluding cancelled leaves)
+        const totalSum = allNonOHLeaves
+          .filter(leave => leave.status_display !== 'Cancelled')
+          .reduce((sum, leave) => sum + parseFloat(leave.no_leave_count || 0), 0);
+        setTotalLeaveSum(totalSum);
+  
+        // Then apply tab-specific filters
+        const tabFilteredData = selectedTab === 'My Leave'
+          ? allNonOHLeaves.filter((leave) => leave.status_display !== 'Cancelled')
           : selectedTab === 'My Cancel Leave'
-          ? res.data.filter((leave) => leave.status_display === 'Cancelled')
-          : res.data;
-        setLeaveData(filteredData);
+          ? allNonOHLeaves.filter((leave) => leave.status_display === 'Cancelled')
+          : allNonOHLeaves;
+          
+        setLeaveData(tabFilteredData);
       })
-      .finally(() => setLoading(false)); // Set loading to false after data is fetched
+      .finally(() => setLoading(false));
   };
 
-  console.log('Response data',leaveData);
+  console.log('Response data==',leaveData);
 
   const handleBackPress = () => {
-    router.push('home');
+    router.navigate({
+      pathname: 'home',
+      params: { screen: 'HomePage' }
+    });
   };
-
+  
   const handleRefresh = () => {
     setRandomValue(randomValue + 1);
   };
@@ -185,8 +219,10 @@ const LeaveScreen = () => {
     });
   };
 
-  const count = leaveData.length;
-  const max_leave = profile?.emp_data?.max_no_leave;
+ // Calculate count of non-OH leaves and sum of their no_leave_count
+const count = leaveData.length;
+const leaveSum = leaveData.reduce((sum, leave) => sum + parseFloat(leave.no_leave_count || 0), 0);
+const max_leave = profile?.emp_data?.max_no_leave;
 
   console.log('Emp data',profile?.emp_data)
 
@@ -222,14 +258,16 @@ const LeaveScreen = () => {
     <>
       <HeaderComponent headerTitle="My Leaves" onBackPress={handleBackPress} />
       <Container>
-        <CardRow>
-          <LeaveCard bgColor="#eaffea" borderColor="#66cc66">
-            <LeaveNumber color="#66cc66">Total Leave Application: {count}</LeaveNumber>
-          </LeaveCard>
-          <LeaveCard bgColor="#e6ecff" borderColor="#4d88ff">
-            <LeaveNumber color="#4d88ff">Max Leave for Year: {max_leave}</LeaveNumber>
-          </LeaveCard>
-        </CardRow>
+      <CardRow>
+        <LeaveCard bgColor="#eaffea" borderColor="#66cc66">
+          <LeaveNumber color="#66cc66">
+            {selectedTab === 'My WFH' ? 'Total WFH' : 'Total Leave Days'}: {selectedTab === 'My Cancel Leave' ? totalLeaveSum : leaveSum}
+          </LeaveNumber>
+        </LeaveCard>
+        <LeaveCard bgColor="#e6ecff" borderColor="#4d88ff">
+          <LeaveNumber color="#4d88ff">Max Leave for Year: {max_leave}</LeaveNumber>
+        </LeaveCard>
+      </CardRow>
 
         <TabContainer>
           <TabButton onPress={() => setSelectedTab('My Leave')}>
