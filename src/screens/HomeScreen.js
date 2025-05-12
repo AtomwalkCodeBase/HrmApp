@@ -1,371 +1,1226 @@
-import React, {useContext, useState, useEffect} from 'react';
-import { View, Text, Image, StatusBar, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
-import styled from 'styled-components/native';
-import {AppContext} from '../../context/AppContext'
-import { getCompanyInfo, getProfileInfo } from '../services/authServices'
-import { Link, useRouter } from "expo-router";
+import React, { useContext, useState, useEffect, useCallback } from 'react';
+import { 
+  View, 
+  Text, 
+  Image, 
+  StatusBar, 
+  TouchableOpacity, 
+  ScrollView, 
+  Dimensions,
+  StyleSheet,
+  SafeAreaView,
+  Platform,
+  RefreshControl,
+  Animated,
+  Alert,
+  FlatList,
+  TextInput,
+  ActivityIndicator
+} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { AppContext } from '../../context/AppContext';
+import { getCompanyInfo, getEmployeeInfo, getProfileInfo } from '../services/authServices';
+import { useRouter } from "expo-router";
 import Loader from '../components/old_components/Loader';
 import NetInfo from '@react-native-community/netinfo';
+import * as Location from 'expo-location';
+import moment from 'moment';
+import { useLayoutEffect } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import { 
+  MaterialIcons, 
+  FontAwesome5, 
+  Ionicons, 
+  Feather, 
+  MaterialCommunityIcons,
+  AntDesign
+} from '@expo/vector-icons';
+import { getEmpAttendance, getEvents, postCheckIn } from '../services/productServices';
+import Modal from 'react-native-modal';
+import RemarksInput from '../components/RemarkInput';
+import SuccessModal from '../components/SuccessModal';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
-const Container = styled.View`
-  background-color: #f5f5f5;
-`;
 
-const GradientHeader = styled(LinearGradient)`
-  height: 100%;
-  width: 100%;
-  padding: 20px;
-  align-items: center;
-  justify-content: center;
-  border-bottom-left-radius: 30px;
-  border-bottom-right-radius: 30px;
-  position: relative;
-`;
-const MenuContainer = styled.ScrollView.attrs({
-  showsVerticalScrollIndicator: false,  // Hide vertical scrollbar
-  showsHorizontalScrollIndicator: false,  // Hide horizontal scrollbar
-})`
-  height: ${height * 0.6}px;
-  margin-top: 10px;
-  padding: 10px;
-`;
-
-const MenuWrapper = styled.View`
-  flex-wrap: wrap;
-  flex-direction: row;
-  justify-content: space-between;
-`;
-
-const MenuItem = styled.TouchableOpacity`
-  width: 45%;
-  height: ${height * 0.12}px;
-  background-color: #F4EBF6;
-  padding: ${height * 0.02}px;
-  border-radius: 15px;
-  margin-bottom: 20px;
-  /* border: 1px solid #333; */
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-`;
-
-const MenuItemLast = styled.TouchableOpacity`
-  width: 45%;
-  height: ${height * 0.12}px;
-  background-color: #F4EBF6;
-  padding: ${height * 0.02}px;
-  border-radius: 15px;
-  margin-bottom: 70px;
-  /* border: 1px solid #333; */
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-`;
-
-const MenuIcon = styled.Image`
-  width: ${width * 0.1}px;
-  height: ${width * 0.1}px;
-  margin-bottom: 10px;
-`;
-
-const MenuText = styled.Text`
-  font-size: ${width * 0.04}px;
-  font-weight: bold;
-  color: #666;
-`;
-
-const Header = styled.View`
-  /* background-color: #a970ff; */
-  height: ${height * 0.35}px;  /* 30% of screen height */
-  /* padding: 20px; */
-  border-bottom-left-radius: 20px;
-  border-bottom-right-radius: 20px;
-  align-items: center;
-  justify-content: space-between;
-  flex-direction: column;
-`;
-const HeaderImageContainer = styled.View`
-  display: flex;
-  width: 100%;
-  /* justify-content: space-between; */
-  align-items: flex-end;
-  /* flex-direction: row; */
-`;
-
-const LogoContainer = styled.View`
-  width: ${width * 0.25}px;  /* Responsive width */
-  height: ${width * 0.25}px;  /* Responsive height */
-  display: flex;
-  justify-content: center;
-  background-color: #FFFFFF;
-  margin-bottom: 20px;
-  align-items: center;
-  border-radius: ${width * 0.35}px;  /* Circular container */
-  overflow: hidden;  /* Ensures the image stays within the container */
-`;
-
-const Logo = styled.Image.attrs(() => ({
-  resizeMode: 'contain',  // Cover ensures the image fills the container
-}))`
-  width: 95%;
-  height: 95%;
-  border-radius: ${width * 0.35}px;  /* Ensures the image respects the circular shape */
-`;
-
-
-const HeaderContent = styled.View`
-  flex: 1;
-  margin-top: -5%;
-  justify-content: center;
-  align-items: center;
-`;
-
-const CompNameContainer = styled.View`
-  flex: 1;
-  justify-content: center;
-  align-items: center;
-`;
-
-const HeaderText = styled.Text`
-  color: white;
-  font-size: ${width * 0.04}px;
-  font-weight: bold;
-  text-align: center;
-`;
-
-const HeaderCompanyName = styled.Text`
-  color: white;
-  font-size: ${width * 0.06}px;  /* Responsive font size */
-  font-weight: bold;
-  text-align: center;
-`;
-
-const IconContainer = styled.TouchableOpacity`
-  width: ${width * 0.15}px;
-  height: ${width * 0.15}px;
-  border-radius: ${width * 0.075}px;
-  background-color: #e5d1ff;
-  align-items: center;
-  justify-content: center;
-`;
-
-const ProfileIcon = styled.Image`
-  width: ${width * 0.13}px;  /* Responsive width */
-  height: ${width * 0.13}px;  /* Responsive height */
-  border-radius: ${width * 0.06}px;  /* Responsive border radius */
-`;
-
-
-
-
-// Main Component
-const HomePage = () => {
+const HomePage = ({ navigation }) => {
   const router = useRouter();
-
-  const {logout, userToken} = useContext(AppContext);
-    const [loading, setLoading] = useState(false);
-    const [profile, setProfile] = useState([]);
-    const [company, setCompany] = useState([])
-    const [isConnected, setIsConnected] = useState(true);
-    const [isManager, setIsManager] = useState(false)
-
-    const fetchData = () => {
-      setLoading(true);
-      getProfileInfo()
-        .then((res) => {
-          setProfile(res.data);
-          setIsManager(res.data.user_group.is_manager);
-        })
-        .catch(() => {
-          setIsManager(false);
-        });
+  const { logout, userToken } = useContext(AppContext);
+  const [loading, setIsLoading] = useState(false);
+  const [profile, setProfile] = useState({});
+  const [company, setCompany] = useState({});
+  const [empId, setEmpId] = useState('');
+  const [empNId, setEmpNId] = useState('');
+  const [isConnected, setIsConnected] = useState(true);
+  const [isManager, setIsManager] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [isBirthday, setIsBirthday] = useState(false);
+  const [greeting, setGreeting] = useState('');
+  const [currentTime, setCurrentTime] = useState(new Date());
   
-      getCompanyInfo()
-        .then((res) => {
-          setCompany(res.data);
-        })
-        .catch(() => {});
+  // Attendance related states
+  const [employeeData, setEmployeeData] = useState({});
+  const [currentDate, setCurrentDate] = useState(moment().format('DD-MM-YYYY'));
+  const [currentTimeStr, setCurrentTimeStr] = useState('');
+  const [checkedIn, setCheckedIn] = useState(false);
+  const [startTime, setStartTime] = useState(null);
+  const [attendance, setAttendance] = useState({});
+  const [attData, setAttData] = useState([]);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [remark, setRemark] = useState('');
+  const [errors, setErrors] = useState({});
+  const [isRemarkModalVisible, setIsRemarkModalVisible] = useState(false);
+  const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
+  const [previousDayUnchecked, setPreviousDayUnchecked] = useState(false);
   
-      setLoading(false);
-    };
+  // console.log("Emp Id--->",empId)
+  // Active events
+  const [activeEvents, setActiveEvents] = useState([]);
+  const [eventData, setEventData] = useState([]);
+const [filteredEvents, setFilteredEvents] = useState([]);
+const [eventLoading, setEventLoading] = useState(true);
+  
+  const fadeAnim = useState(new Animated.Value(0))[0];
 
-
-    useEffect(() => {
-      setLoading(true)
-      getProfileInfo()
-      .then((res) => {
-          setProfile(res.data);
-          setIsManager(res.data.user_group.is_manager);
-          setLoading(false);
-      })
-      .catch((error) => {
-          setLoading(false);
-          setIsManager(false);
+  useLayoutEffect(() => {
+    if (navigation) {
+      navigation.setOptions({
+        headerShown: false,
       });
+    }
+  }, [navigation]);
 
-      getCompanyInfo()
-      .then((res) => {
-        setCompany(res.data);
-        setLoading(false);
-    })
-    .catch((error) => {
-        setLoading(false);
-    });
-    }, []);
+  useEffect(() => {
+    fetchEvents();
+  }, [empId]);
 
-    useEffect(() => {
-      fetchData();
+  const setdatatime = async () => {
+    let time = moment().format('hh:mm A');
+    if (moment().isBetween(moment().startOf('day').add(12, 'hours').add(1, 'minute'), moment().startOf('day').add(13, 'hours'))) {
+      time = time.replace(/^12/, '00');
+    }
+    return time;
+  };
+
   
-      const unsubscribe = NetInfo.addEventListener(state => {
-        if (!isConnected && state.isConnected) {
-          fetchData();
+
+  // console.log("Emp===",profile)
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const profileRes = await getProfileInfo();
+      const profileData = profileRes.data;
+      
+      // Set profile state
+      setProfile(profileData);
+      
+      // Store profile data in AsyncStorage
+      if (profileData) {
+        // Store the entire profile data
+        await AsyncStorage.setItem('profile', JSON.stringify(profileData));
+        // Also store just the name if you need it separately
+        if (profileData?.emp_data?.name) {
+          await AsyncStorage.setItem('profilename', profileData.emp_data.name);
         }
-        setIsConnected(state.isConnected);
-      });
+      }
+      
+      console.log("Profile===", profileData);
+      setEmployeeData(profileData);
+      setIsManager(profileData.user_group?.is_manager || false);
+      
+      // Check if today is employee's birthday
+      if (profileData?.emp_data?.dob) {
+        checkIfBirthday(profileData.emp_data.dob);
+      }
+
+      const companyRes = await getCompanyInfo();
+      setCompany(companyRes.data);
+      
+      // Mock active events data
+      setActiveEvents([
+        {
+          id: 1,
+          title: 'Team Building',
+          description: 'Join us for exciting team activities in the conference room.',
+          time: '2:00 PM - 4:00 PM',
+          icon: 'people'
+        },
+        {
+          id: 2,
+          title: 'Weekly Meeting',
+          description: 'Discuss project updates and upcoming deadlines.',
+          time: '10:00 AM - 11:00 AM',
+          icon: 'event-note'
+        }
+      ]);
+      
+      // Set current date and time
+      const date = moment().format('DD-MM-YYYY');
+      let time = moment().format('hh:mm A');
+
+      if (moment().isBetween(moment().startOf('day').add(12, 'hours').add(1, 'minute'), moment().startOf('day').add(13, 'hours'))) {
+        time = time.replace(/^12/, '00');
+      }
+
+      setCurrentDate(date);
+      setCurrentTimeStr(time);
+      
+      // Fetch attendance data
+      const data = {
+        emp_id: profileData?.emp_data,
+        month: moment().format('MM'),
+        year: moment().format('YYYY'),
+      };
+      fetchAttendanceDetails(data);
+      
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setIsLoading(false);
+      setRefreshing(false);
+    }
+};
+
+
+  const fetchEvents = async () => {
+    try {
+      setEventLoading(true);
+      
+      // First fetch: Get all events without emp_id filter (company-wide and other public events)
+      const paramsAllEvents = {
+        date_range: 'D0', // Today's events
+        event_type: '', // All types
+        // No emp_id parameter
+      };
+      const resAllEvents = await getEvents(paramsAllEvents);
+      
+      // Filter events to only include specific types
+      const filteredEventTypes = ['C', 'B', 'A', 'M', 'O']; // Company, Birthday, Announcement, Meeting, Other
+      const filteredEvents = resAllEvents.data.filter(event => 
+        filteredEventTypes.includes(event.event_type)
+      );
   
-      return () => unsubscribe();
-    }, [isConnected]);
+      // Second fetch: Try with empId if available (personalized events)
+      let personalEvents = [];
+      if (empId) {
+        const paramsWithEmpId = {
+          date_range: 'D0',
+          event_type: '',
+          emp_id: empId
+        };
+        const resWithEmpId = await getEvents(paramsWithEmpId);
+        personalEvents = resWithEmpId.data;
+      }
   
+      // Combine both results, removing duplicates
+      const combinedEvents = [...filteredEvents, ...personalEvents].reduce((acc, current) => {
+        const x = acc.find(item => item.id === current.id);
+        if (!x) {
+          return acc.concat([current]);
+        } else {
+          return acc;
+        }
+      }, []);
+  
+      setEventData(combinedEvents);
+      setFilteredEvents(combinedEvents);
+    } catch (error) {
+      console.error("Fetch Event Error:", error?.response?.data);
+      // Fallback: Try to at least show company events
+      try {
+        const paramsCompanyEvents = {
+          date_range: 'D0',
+          event_type: 'C'
+        };
+        const resCompanyEvents = await getEvents(paramsCompanyEvents);
+        setEventData(resCompanyEvents.data);
+        setFilteredEvents(resCompanyEvents.data);
+      } catch (fallbackError) {
+        console.error("Fallback Fetch Error:", fallbackError);
+        setEventData([]);
+        setFilteredEvents([]);
+      }
+    } finally {
+      setEventLoading(false);
+    }
+  };
 
-    console.log('Company ---',company);
+  const handlePressApproveLeave = () => {  
+    router.push({
+      pathname: 'ApproveLeaves',
+      params: { empNId },
+    });
+  };
 
-    console.log("Home profi=--=",profile)
+  const fetchAttendanceDetails = (data) => {
+    setIsLoading(true);
+    getEmpAttendance(data).then((res) => {
+      setAttData(res.data);
+      processAttendanceData(res.data);
+      setIsLoading(false);
+    });
+  };
 
+  const processAttendanceData = (data) => {
+    const todayAttendance = data.find((item) => item.a_date === currentDate);
+
+    if (todayAttendance) {
+      setCheckedIn(todayAttendance.end_time === null);
+      setStartTime(todayAttendance.start_time);
+      setAttendance(todayAttendance);
+    } else {
+      setCheckedIn(false);
+      setStartTime(null);
+      setAttendance({});
+    }
+  };
+
+  // Function to check if today is the employee's birthday
+  const checkIfBirthday = (dobString) => {
+    try {
+      // Parse the DOB string in "24-Apr-2001" format
+      const dobParts = dobString.split('-');
+      if (dobParts.length !== 3) return;
+
+      const today = new Date();
+      
+      // Convert month abbreviation to month number (0-11)
+      const months = {
+        'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+        'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+      };
+      
+      const dobDay = parseInt(dobParts[0], 10);
+      const dobMonth = months[dobParts[1]];
+      
+      // Check if today's date and month match the DOB
+      if (today.getDate() === dobDay && today.getMonth() === dobMonth) {
+        setIsBirthday(true);
+        // Start animation for birthday message
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true
+        }).start();
+      } else {
+        setIsBirthday(false);
+      }
+    } catch (error) {
+      console.error("Error checking birthday:", error);
+      setIsBirthday(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
     
-    const handlePressLeave = () => {
-      router.push('leave');
+    // Set greeting based on time of day
+    const updateGreeting = () => {
+      const currentHour = new Date().getHours();
+      if (currentHour < 12) {
+        setGreeting('Good Morning');
+      } else if (currentHour < 17) {
+        setGreeting('Good Afternoon');
+      } else {
+        setGreeting('Good Evening');
+      }
     };
-    const handlePressId = () => {
-      router.push({
-        pathname: 'IdCard' 
-      });
+    
+    updateGreeting();
+    
+    // Update time every minute
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+      updateGreeting();
+    }, 60000);
+    
+    const netInfoUnsubscribe = NetInfo.addEventListener(state => {
+      if (!isConnected && state.isConnected) {
+        fetchData();
+      }
+      setIsConnected(state.isConnected);
+    });
+    
+    return () => {
+      clearInterval(interval);
+      netInfoUnsubscribe();
     };
-    const handlePressHoliday = () => {
-      router.push({
-        pathname: 'HolidayList' 
-      });
-    };
-    const handlePressALeave = () => {
-      router.push({
-        pathname: 'ApproveLeaves' 
-      });
-    };
-    const handlePressClaim = () => {
-      router.push({
-        pathname: 'ClaimScreen' 
-      });
-    };
-    const handlePressAClaim = (leave) => {
-      router.push({
-        pathname: 'ApproveClaim' 
-      });
-    };
+  }, [isConnected]);
 
-    // const handlePressRequest = () => {
-    //   router.push({
-    //     pathname: 'RequestScr' 
-    //   });
-    // };
+  useFocusEffect(
+    useCallback(() => {
+      if (employeeData?.id) { // Use employeeData.id instead of empId
+        const data = {
+          emp_id: employeeData.id,
+          month: moment().format('MM'),
+          year: moment().format('YYYY'),
+        };
+        fetchAttendanceDetails(data);
+      }
+    }, [employeeData, refreshKey]) // Add employeeData to dependencies
+  );
 
-    // const handleAppointee = () => {
-    //   router.push({
-    //     pathname: 'AddAppointee' 
-    //   });
-    // };
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchEvents();
+    setRefreshKey((prevKey) => prevKey + 1);
+    fetchData();
+    setRefreshing(false);
+  };
 
-    const handlePressAttendance = () => {
-      router.push('attendance');
+  const handleError = (error, input) => {
+    setErrors(prevState => ({...prevState, [input]: error}));
+  };
+
+  const handleCheck = async (data) => {
+    setIsLoading(true);
+    const { status } = await Location.requestForegroundPermissionsAsync();
+  
+    if (status !== 'granted') {
+      Alert.alert('Permission denied', 'Location permission is required to check.');
+      setIsLoading(false);
+      return;
+    }
+  
+    let location = null;
+    let retries = 0;
+  
+    while (!location && retries < 5) {
+      try {
+        location = await Location.getCurrentPositionAsync({});
+      } catch (error) {
+        retries += 1;
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    }
+  
+    if (!location) {
+      Alert.alert('Error', 'Unable to fetch location. Please try again.');
+      setIsLoading(false);
+      return;
+    }
+  
+    const todayAttendance = attData.find((item) => item.a_date === currentDate);
+    const attendanceId = todayAttendance ? todayAttendance.id : null;
+    const time = await setdatatime();
+    
+    const checkPayload = {
+      emp_id: employeeData?.emp_data?.emp_id,
+      call_mode: data,
+      time: time,
+      geo_type: data === 'ADD' ? 'I' : 'O',
+      a_date: currentDate,
+      latitude_id: `${location?.coords?.latitude}`,
+      longitude_id: `${location?.coords?.longitude}`,
+      remarks: data === 'ADD' ? 'Check-in from Mobile' : remark,
+      id: attendanceId,
     };
-
-    const handleMorePress = () => {  
-      router.push({
-        pathname: 'MoreScreen',
-        // params: {
-        //   isManager,
-        // },
+  
+    postCheckIn(checkPayload)
+      .then(() => {
+        setCheckedIn(data === 'ADD');
+        setStartTime(currentTimeStr);
+        setRefreshKey((prevKey) => prevKey + 1);
+        setIsSuccessModalVisible(true);
+        if (data === 'UPDATE') setRemark('');
+      })
+      .catch(() => {
+        Alert.alert('Check Failure', 'Failed to Check.');
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   };
 
 
+  const handleCheckIn = () => {
+    handleCheck('ADD');
+  };
+
+  const handleCheckOut = () => {
+    setIsRemarkModalVisible(true);
+  };
+  
+  const handleRemarkSubmit = () => {
+    if (!remark.trim()) {
+      handleError('Remark cannot be empty', 'remarks');
+    } else {
+      setIsRemarkModalVisible(false);
+      handleCheck('UPDATE');
+    }
+  };
+
+  const closeSuccessModal = () => {
+    setIsSuccessModalVisible(false);
+  };
+
+  const handleEventPress = (event) => {
+    // console.log("Event Data===",event)
+    router.push({
+      pathname: 'EventDetails',
+      params: {
+        eventDetails: JSON.stringify(event)
+      },
+    });
+  };
+
+  const formatTime = (date) => {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  // Determine button states for check-in/out
+  const isCheckInDisabled = checkedIn || attendance.geo_status === 'O' || !!attendance.start_time;
+  const isCheckOutDisabled = !checkedIn || attendance.geo_status !== 'I' || !!attendance.end_time;
+
+  
+
+  const menuItems = [
+    {
+      id: 1,
+      title: 'Attendance',
+      icon: <FontAwesome5 name="user-clock" size={24} color="#a970ff" />,
+      onPress: () => router.push('attendance')
+    },
+    {
+      id: 2,
+      title: 'ID Card',
+      icon: <MaterialIcons name="contact-page" size={24} color="#a970ff" />,
+      onPress: () => router.push('IdCard')
+    },
+    {
+      id: 3,
+      title: 'Leaves',
+      icon: <Ionicons name="calendar-outline" size={24} color="#a970ff" />,
+      onPress: () => router.push('leave')
+    },
+    ...(isManager ? [{
+      id: 4,
+      title: 'Approve Leave',
+      icon: <Ionicons name="checkmark-done-circle-outline" size={24} color="#a970ff" />,
+      onPress: () => handlePressApproveLeave()
+    }] : []),
+    {
+      id: 5,
+      title: 'Claims',
+      icon: <MaterialIcons name="attach-money" size={24} color="#a970ff" />,
+      onPress: () => router.push('ClaimScreen')
+    },
+    ...(isManager ? [{
+      id: 6,
+      title: 'Approve Claims',
+      icon: <MaterialIcons name="monetization-on" size={24} color="#a970ff" />,
+      onPress: () => router.push('ApproveClaim')
+    }] : []),
+    {
+      id: 7,
+      title: 'Holiday',
+      icon: <FontAwesome5 name="umbrella-beach" size={24} color="#a970ff" />,
+      onPress: () => router.push('HolidayList')
+    },
+    {
+      id: 8,
+      title: 'More',
+      icon: <Feather name="more-horizontal" size={24} color="#a970ff" />,
+      onPress: () => router.push('MoreScreen')
+    }
+  ];
+
+  const getEventIcon = (eventType) => {
+    switch(eventType) {
+      case 'B': return 'cake';
+      case 'A': return 'work';
+      case 'C': return 'business';
+      case 'M': return 'favorite';
+      case 'P': return 'trending-up';
+      case 'O': return 'event';
+      default: return 'event';
+    }
+  };
+
   return (
-    <Container>
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor="#a970ff" />
+      {loading && (
+  <View style={styles.loaderContainer}>
+    <Loader visible={true} />
+  </View>
+)}
       
-      <StatusBar barStyle={'light-content'} backgroundColor={'#a970ff'} />
-      <Loader visible={loading} />
-      {/* Header */}
-      <Header>
-      <GradientHeader colors={['#a970ff', '#a970ff']} start={[0.0, 0.5]} end={[1.0, 0.5]}>
+      {/* Curved Header */}
+      <View style={styles.headerContainer}>
+      <LinearGradient 
+    colors={['#a970ff', '#8a5bda']} 
+    start={[0, 0]} 
+    end={[1, 1]}
+    style={styles.headerGradient}
+  >
+    <View style={styles.headerTop}>
+      <View style={styles.headerTopContent}>
+        <View style={styles.companySection}>
+          {company.image ? (
+            <Image 
+              source={{ uri: company.image }} 
+              style={styles.companyLogo} 
+              resizeMode="contain"
+            />
+          ) : (
+            <View style={styles.companyPlaceholder}>
+              <MaterialIcons name="business" size={40} color="#fff" />
+            </View>
+          )}
+          <Text style={styles.companyName}>
+            {company.name || 'ATOMWALK'}
+          </Text>
+        </View>
+      </View>
+      
+      {/* <TouchableOpacity 
+        style={styles.profileButton}
+        onPress={() => router.push('profile')}
+      >
+        {profile?.emp_data?.image ? (
+          <Image source={{ uri: profile?.emp_data?.image }} style={styles.profileImage} />
+        ) : (
+          <FontAwesome5 name="user-circle" size={width * 0.09} color="#a970ff" />
+        )}
+      </TouchableOpacity> */}
+    </View>
+    
+    <View style={styles.welcomeSection}>
+      <Text style={styles.greeting}>{greeting},</Text>
+      <Text style={styles.userName} onPress={() => router.push('profile')}>
+        {profile?.emp_data?.name ? `${profile?.emp_data?.name}` : 'Employee'}
+      </Text>
+    </View>
+  </LinearGradient>
         
+        {/* Time Card */}
+        <View style={styles.timeCardContainer}>
+        <LinearGradient
+          colors={['#ffffff', '#f8f5ff']}
+          style={styles.timeCard}
+        >
+          <View style={styles.timeCardContent}>
+            <View style={styles.timeSection}>
+              <Text style={styles.dateText}>
+                {currentTime.toLocaleDateString('en-US', { 
+                  weekday: 'short', 
+                  day: 'numeric', 
+                  month: 'short', 
+                  year: 'numeric' 
+                })}
+              </Text>
+              <Text style={styles.timeText}>
+                {formatTime(currentTime)}
+              </Text>
+            </View>
+            <View style={styles.attendanceButtons}>
+            <TouchableOpacity 
+              style={[
+                styles.attendanceButton, 
+                isCheckInDisabled ? styles.disabledButton : styles.checkInButton
+              ]}
+              onPress={handleCheckIn}
+              disabled={isCheckInDisabled}
+            >
+              <MaterialCommunityIcons name="login" size={20} color={isCheckInDisabled ? "#888" : "#fff"} />
+              <Text style={[styles.attendanceButtonText, isCheckInDisabled ? styles.disabledButtonText : {}]}>
+                {employeeData?.is_shift_applicable && previousDayUnchecked 
+                  ? "Complete yesterday's checkout first"
+                  : checkedIn 
+                    ? `Checked In`
+                    : 'Check In'}
+              </Text>
+            </TouchableOpacity>
+              <TouchableOpacity 
+                style={[
+                  styles.attendanceButton, 
+                  isCheckOutDisabled ? styles.disabledButton : styles.checkOutButton
+                ]}
+                onPress={handleCheckOut}
+                disabled={isCheckOutDisabled}
+              >
+                <MaterialCommunityIcons name="logout" size={20} color={isCheckOutDisabled ? "#888" : "#fff"} />
+                <Text style={[styles.attendanceButtonText, isCheckOutDisabled ? styles.disabledButtonText : {}]}>
+                  {isCheckOutDisabled
+                    ? attendance.end_time 
+                      ? `Checked Out`
+                      : 'Check Out'
+                    : 'Check Out'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+            {checkedIn && startTime && (
+              <Text style={styles.checkinTimeText}>
+                Checked in at {startTime}
+              </Text>
+            )}
+          </View>
+        </LinearGradient>
+      </View>
+      </View>
+
+      {/* Main Content */}
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#a970ff"]} />
+        }
+      >
+        {/* Birthday and Events Cards Slider */}
+        {(isBirthday || filteredEvents.length > 0) && (
+  <View style={styles.eventsContainer}>
+    <Text style={styles.sectionTitle}>Today's Events</Text>
+    {eventLoading ? (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="small" color="#a970ff" />
+      </View>
+    ) : (
+      <FlatList
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        data={[
+          ...(isBirthday ? [{ id: 'birthday', type: 'birthday' }] : []),
+          ...filteredEvents.map(event => ({ 
+            ...event, 
+            type: 'event',
+            title: event.event_name,
+            description: event.event_description,
+            time: `${event.event_start_time}${event.event_end_time ? ` - ${event.event_end_time}` : ''}`,
+            icon: getEventIcon(event.event_type)
+          }))
+        ]}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => 
+          item.type === 'birthday' ? (
+            <Animated.View style={[styles.birthdayCard, { opacity: fadeAnim }]}>
+              <LinearGradient
+                colors={['#a970ff', '#8a5bda']}
+                start={[0, 0]}
+                end={[1, 1]}
+                style={{
+                  flex: 1,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  padding: 16
+                }}
+              >
+                <View style={styles.birthdayIconContainer}>
+                  <MaterialCommunityIcons name="cake-variant" size={28} color="#fff" />
+                </View>
+                <View style={styles.birthdayTextContainer}>
+                  <Text style={styles.birthdayText}>Happy Birthday!</Text>
+                  <Text style={styles.birthdaySubtext}>
+                    Wishing you a fantastic day filled with joy and celebration.
+                  </Text>
+                </View>
+              </LinearGradient>
+            </Animated.View>
+          ) : (
+            <TouchableOpacity onPress={() => handleEventPress(item)}>
+              <View style={styles.eventCard}>
+                <LinearGradient
+                  colors={['#a970ff', '#8a5bda']}
+                  start={[0, 0]}
+                  end={[1, 1]}
+                  style={{
+                    flex: 1,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    padding: 16
+                  }}
+                >
+                  <View style={styles.eventIconContainer}>
+                    <MaterialIcons name={item.icon} size={28} color="#fff" />
+                  </View>
+                  <View style={styles.eventTextContainer}>
+                    <Text style={styles.eventTitle}>{item.event_text}</Text>
+                    <Text style={styles.eventDescription} numberOfLines={2}>
+                      {item.event_type_display}
+                    </Text>
+                    <Text style={styles.eventTime}>{item.emp_name}</Text>
+                  </View>
+                </LinearGradient>
+              </View>
+            </TouchableOpacity>
+          )
+        }
+        contentContainerStyle={styles.cardsSlider}
+      />
+    )}
+  </View>
+)}
+
+        {/* Quick Actions Section */}
+        <View style={styles.sectionContainer}>
+          <Text style={styles.sectionTitle}>Quick Menu</Text>
+          <View style={styles.menuGrid}>
+            {menuItems.map((item) => (
+              <TouchableOpacity 
+                key={item.id}
+                style={styles.menuItem}
+                onPress={item.onPress}
+                activeOpacity={0.7}
+              >
+                <View style={styles.menuIconContainer}>
+                  {item.icon}
+                </View>
+                <Text style={styles.menuItemText}>{item.title}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
         
-        <HeaderContent>
-        <LogoContainer>
-          <Logo source={{ uri: company.image }} />
+      </ScrollView>
 
-        </LogoContainer>
-          <HeaderCompanyName>{company.name}</HeaderCompanyName> 
-          <HeaderText>Welcome to ATOMWALK HRM!</HeaderText>
-        </HeaderContent>
+      {/* Remark Modal for checkout */}
+      <Modal transparent visible={isRemarkModalVisible} animationType="fade">
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Check Out Remarks</Text>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => setIsRemarkModalVisible(false)}
+              >
+                <Feather name="x" size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
+            
+            <RemarksInput
+              remark={remark}
+              label= {false}
+              setRemark={setRemark}
+              error={errors.remarks}
+              placeholder="Please enter you check out remark"
+            />
 
-        </GradientHeader>
-      </Header>
-
-      <MenuContainer>
-      <MenuWrapper>
-
-      <MenuItem onPress={() => handlePressAttendance()}>
-        <Image source={require('../../assets/images/AttendanceIcon.png')} style={{ width: 50, height: 50 }} />
-          <MenuText>My Attendance</MenuText>
-        </MenuItem>
-
-        <MenuItem onPress={() => handlePressId()}>
-        <Image source={require('../../assets/images/id-card.png')} style={{ width: 50, height: 50 }} />
-          <MenuText>My Id Card</MenuText>
-        </MenuItem>
-
-        <MenuItem onPress={() => handlePressLeave()}>
-        <Image source={require('../../assets/images/LeaveIcon.png')} style={{ width: 50, height: 50 }} />
-          <MenuText>My Leaves</MenuText>
-        </MenuItem>
-
-        { isManager&&
-        <MenuItem onPress={() => handlePressALeave()}>
-        <Image source={require('../../assets/images/ALeave.png')} style={{ width: 50, height: 50 }} />
-          <MenuText>Approve Leave</MenuText>
-        </MenuItem>
-        }
-
-        <MenuItem onPress={() => handlePressClaim()}>
-        <Image source={require('../../assets/images/ClaimIcon.png')} style={{ width: 50, height: 50 }} />
-          <MenuText>My Claims</MenuText>
-        </MenuItem>
-
-        { isManager&&
-       <MenuItem onPress={() => handlePressAClaim()}>
-        <Image source={require('../../assets/images/AClaim.png')} style={{ width: 50, height: 50 }} />
-          <MenuText>Approve Claims</MenuText>
-        </MenuItem>
-        }
-
-        <MenuItem onPress={() => handlePressHoliday()}>
-        <Image source={require('../../assets/images/holiday.png')} style={{ width: 50, height: 50 }} />
-          <MenuText>Holiday</MenuText>
-        </MenuItem>
-
-
-           
-             <MenuItemLast onPress={() => handleMorePress()}>
-              <Image source={require('../../assets/images/MoreOption.png')} style={{ width: 50, height: 50 }} />
-                <MenuText>More</MenuText>
-              </MenuItemLast>
-   
-
-       </MenuWrapper>
-
-      </MenuContainer>
-    </Container>
+            <TouchableOpacity 
+              style={styles.modalSubmitButton}
+              onPress={handleRemarkSubmit}
+            >
+              <Text style={styles.modalSubmitText}>Submit Check Out</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+        
+      <SuccessModal
+        visible={isSuccessModalVisible}
+        onClose={closeSuccessModal}
+        message="Attendance recorded successfully"
+      />
+    </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#f8f5ff',
+  },
+  headerContainer: {
+    overflow: 'visible',
+    zIndex: 10,
+  },
+  loaderContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 999,
+    elevation: Platform.OS === 'android' ? 999 : 0,
+    // Remove the pointerEvents from here - handle it at the component level
+},
+headerGradient: {
+  paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight + 10 : 10,
+  paddingHorizontal: 20,
+  paddingBottom: 60, // Extra padding for the curved effect
+  borderBottomLeftRadius: 30,
+  borderBottomRightRadius: 30,
+},
+headerTop: {
+  paddingVertical: 10,
+  // marginTop: -20, // Added negative margin to move content up
+},
+headerTopContent: {
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+companySection: {
+  alignItems: 'center',
+  justifyContent: 'center',
+  // marginBottom: 20,
+},
+companyLogo: {
+  width: width * 0.25,
+  height: width * 0.25,
+  borderRadius: width * 0.125,
+  backgroundColor: '#fff',
+  marginBottom: 12,
+},
+companyPlaceholder: {
+  width: width * 0.25,
+  height: width * 0.25,
+  borderRadius: width * 0.125,
+  backgroundColor: 'rgba(255, 255, 255, 0.3)',
+  justifyContent: 'center',
+  alignItems: 'center',
+  marginBottom: 12,
+},
+companyName: {
+  color: '#fff',
+  fontSize: width * 0.06,
+  fontWeight: 'bold',
+  textAlign: 'center',
+},
+  profileButton: {
+    width: width * 0.11,
+    height: width * 0.11,
+    borderRadius: width * 0.055,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+  },
+  profileImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: width * 0.055,
+  },
+
+  welcomeSection: {
+    marginTop: 15,
+    marginBottom: 10,
+  },
+  greeting: {
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontSize: width * 0.04,
+    fontWeight: '500',
+  },
+  userName: {
+    color: '#fff',
+    fontSize: width * 0.065,
+    fontWeight: 'bold',
+    marginTop: 3,
+  },
+  timeCardContainer: {
+    paddingHorizontal: 20,
+    marginTop: -40, // Pull up to overlap with the header
+  },
+  timeCard: {
+    borderRadius: 15,
+    elevation: 8,
+    shadowColor: '#a970ff',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+  },
+  timeCardContent: {
+    padding: 16,
+  },
+  timeSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  dateText: {
+    fontSize: width * 0.036,
+    color: '#555',
+    fontWeight: '500',
+  },
+  timeText: {
+    fontSize: width * 0.04,
+    color: '#333',
+    fontWeight: 'bold',
+  },
+  attendanceButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 5,
+  },
+  attendanceButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '48%',
+    paddingVertical: 12,
+    borderRadius: 10,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+  },
+  checkInButton: {
+    backgroundColor: '#a970ff',
+  },
+  checkOutButton: {
+    backgroundColor: '#a970ff',
+  },
+  disabledButton: {
+    backgroundColor: '#f0f0f0',
+    elevation: 0,
+  },
+  attendanceButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+    marginLeft: 8,
+    fontSize: width * 0.035,
+  },
+  disabledButtonText: {
+    color: '#888',
+  },
+  checkinTimeText: {
+    textAlign: 'center',
+    color: '#a970ff',
+    fontSize: width * 0.035,
+    fontWeight: '500',
+    marginTop: 12,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 30,
+  },
+  eventsContainer: {
+    marginBottom: 20,
+  },
+  cardsSlider: {
+    paddingRight: 20,
+  },
+  // birthdayCard: {
+  //   width: width * 0.75,
+  //   marginRight: 15,
+  //   borderRadius: 15,
+  //   overflow: 'hidden',
+  //   elevation: 4,
+  //   shadowColor: '#a970ff',
+  //   shadowOffset: { width: 0, height: 2 },
+  //   shadowOpacity: 0.2,
+  //   shadowRadius: 4,
+  // },
+  birthdayCard: {
+    width: width * 0.75,
+    marginRight: 15,
+    borderRadius: 15,
+    overflow: 'hidden',
+    elevation: 4,
+    shadowColor: '#a970ff',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  birthdayGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    // height: '100%',  // This ensures the gradient fills the card
+  },
+  
+  birthdayIconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
+  },
+  birthdayTextContainer: {
+    flex: 1,
+  },
+  birthdayText: {
+    color: '#fff',
+    fontSize: width * 0.045,
+    fontWeight: 'bold',
+    marginBottom: 3,
+  },
+  birthdaySubtext: {
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontSize: width * 0.035,
+  },
+  eventCard: {
+    width: width * 0.75,
+    marginRight: 15,
+    borderRadius: 15,
+    overflow: 'hidden',
+    elevation: 4,
+    shadowColor: '#a970ff',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  eventGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    // height: '100%'  // Add this property here
+  },
+  eventIconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
+  },
+  eventTextContainer: {
+    flex: 1,
+  },
+  eventTitle: {
+    color: '#fff',
+    fontSize: width * 0.045,
+    fontWeight: 'bold',
+    marginBottom: 3,
+  },
+  eventDescription: {
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontSize: width * 0.035,
+  },
+  eventTime: {
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontSize: width * 0.035,
+  },
+
+  sectionContainer: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: width * 0.045,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 12,
+    marginLeft: 5,
+  },
+  loadingContainer: {
+    height: 120, // Match your card height
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  menuGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  menuItem: {
+    width: width * 0.44,
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 15,
+    marginBottom: 15,
+    elevation: 3,
+    shadowColor: '#a970ff',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    alignItems: 'center',
+  },
+  menuIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(169, 112, 255, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  menuItemText: {
+    fontSize: width * 0.036,
+    fontWeight: '600',
+    color: '#444',
+    textAlign: 'center',
+  },
+  offlineWarning: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#ffebee',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginTop: 10,
+  },
+  offlineText: {
+    color: '#f44336',
+    marginLeft: 8,
+    fontSize: width * 0.035,
+    fontWeight: '500',
+  },
+  // modalBackdrop: {
+  //   flex: 1,
+  //   backgroundColor: 'rgba(0,0,0,0.5)',
+  //   justifyContent: 'center',
+  //   alignItems: 'center',
+  // },
+  // modalContent: {
+  //   width: '90%',
+  //   backgroundColor: '#fff',
+  //   borderRadius: 12,
+  //   padding: 20,
+  // },
+  modalBackdrop: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent', // Remove solid background
+    overflow: 'hidden', // Important for gradient edges
+  },
+  modalContent: {
+    width: '90%',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 20,
+    // Add subtle shadow for depth
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10, // Android
+    zIndex: 1, // Ensure content stays above gradient
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontFamily: 'Inter-SemiBold',
+    color: '#333',
+  },
+  closeButton: {
+    padding: 4,
+  },
+  modalSubmitButton: {
+    backgroundColor: '#2196F3',
+    padding: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  modalSubmitText: {
+    color: '#fff',
+    fontFamily: 'Inter-SemiBold',
+    fontSize: 16,
+  },
+});
 
 export default HomePage;

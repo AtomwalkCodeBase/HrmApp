@@ -27,6 +27,8 @@ export default function RootLayout() {
       <Stack.Screen name="HelpScr/index" options={{headerShown:false}}/>
       <Stack.Screen name="MoreScreen/index" options={{headerShown:false}}/>
       <Stack.Screen name="ResolveHelp&Request/index" options={{headerShown:false}}/>
+      <Stack.Screen name="EventScr/index" options={{headerShown:false}}/>
+      <Stack.Screen name="EventDetails/index" options={{headerShown:false}}/>
     </Stack>
     
     </AppProvider>

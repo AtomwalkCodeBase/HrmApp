@@ -10,6 +10,7 @@ import EmptyMessage from '../components/EmptyMessage';
 import Loader from '../components/old_components/Loader'; // Import the Loader component
 import SuccessModal from '../components/SuccessModal';
 import ErrorModal from '../components/ErrorModal';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const monthNameMap = {
   'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4,
@@ -100,6 +101,9 @@ const HolidayScreen = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const navigation = useNavigation();
   const currentYear = new Date().getFullYear();
+  const [confirmationModalVisible, setConfirmationModalVisible] = useState(false);
+  const [selectedAction, setSelectedAction] = useState(null);
+  const [selectedHolidayDate, setSelectedHolidayDate] = useState(null);
 
   const router = useRouter();
 
@@ -129,6 +133,19 @@ const HolidayScreen = () => {
       pathname: 'home',
       params: { screen: 'HomePage' }
     });
+  };
+
+  const showConfirmationModal = (date, actionType) => {
+    setSelectedAction(actionType);
+    setSelectedHolidayDate(date);
+    setConfirmationModalVisible(true);
+  };
+
+  const handleConfirmAction = () => {
+    setConfirmationModalVisible(false);
+    if (selectedAction && selectedHolidayDate) {
+      handleHolidayAction(selectedHolidayDate, selectedAction);
+    }
   };
 
   const processHolidayData = data => {
@@ -268,10 +285,10 @@ const HolidayScreen = () => {
                     .filter(holiday => activeTab === 'Company Holiday' ? holiday.type === 'Mandatory' : holiday.type === 'Optional')
                     .map((holiday, index) => (
                       <HolidayCard
-                        key={index}
+                        key={`${monthIndex}-${index}`}
                         holiday={holiday}
-                        onOptClick={() => handleHolidayAction(holiday.date, 'opt')}
-                        onCancelClick={() => handleHolidayAction(holiday.date, 'cancel')}
+                        onOptClick={() => showConfirmationModal(holiday.date, 'opt')}
+                        onCancelClick={() => showConfirmationModal(holiday.date, 'cancel')}
                       />
                     ))}
                 </View>
@@ -282,6 +299,13 @@ const HolidayScreen = () => {
           </HolidayList>
         )}
       </Container>
+
+      <ConfirmationModal
+        visible={confirmationModalVisible}
+        message={`Are you sure you want to ${selectedAction === 'opt' ? 'apply for' : 'cancel'} this optional holiday?`}
+        onConfirm={handleConfirmAction}
+        onCancel={() => setConfirmationModalVisible(false)}
+      />
 
       <SuccessModal 
         visible={modalVisible} 

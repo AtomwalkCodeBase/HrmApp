@@ -1,4 +1,4 @@
-import { addEmpLeave, getEmpLeavedata, addClaim, getEmpClaimdata, getExpenseItemList, getProjectList, getEmpAttendanceData, getEmpHolidayData, empCheckData, processClaim, getClaimApproverList, getfiletotext, getAppointeeList, processAppointee, getEmployeeRequestList, getEmployeeRequestCategory, processEmployeeRequest } from "../services/ConstantServies";
+import { addEmpLeave, getEmpLeavedata, addClaim, getEmpClaimdata, getExpenseItemList, getProjectList, getEmpAttendanceData, getEmpHolidayData, empCheckData, processClaim, getClaimApproverList, getfiletotext, getAppointeeList, processAppointee, getEmployeeRequestList, getEmployeeRequestCategory, processEmployeeRequest, getEventtList, getEventResponse, processEventRes } from "../services/ConstantServies";
 import { authAxios, authAxiosFilePost, authAxiosPost } from "./HttpMethod";
 
 export function getEmpLeave(leave_type , emp_id, year) {
@@ -75,7 +75,7 @@ export function getEmpLeave(leave_type , emp_id, year) {
       'month':res.month,
       'year': res.year
     };
-    // console.log('Final response data',data)
+    console.log('Final response data',data)
     return authAxios(getEmpAttendanceData, data)
   }
 
@@ -120,11 +120,11 @@ export function getEmpLeave(leave_type , emp_id, year) {
   }
 
   export function getEmployeeRequest() { 
-    let data = {
-      'emp_id':"EMP-001",
-      'request_sub_type':"Technical Support",
-      'request_type': "H"
-    };
+    // let data = {
+    //   'emp_id':"EMP-001",
+    //   'request_sub_type':"Technical Support",
+    //   'request_type': "H"
+    // };
     return authAxios(getEmployeeRequestList)
   }
 
@@ -139,4 +139,33 @@ export function getEmpLeave(leave_type , emp_id, year) {
     // }
     console.log('Data to be sent:', request_data);
     return authAxiosFilePost(processEmployeeRequest, request_data)
+  }
+
+  export function getEvents(params = {}) {
+    const data = {
+      emp_id: params.emp_id || "",
+      event_type: params.event_type || "",
+      date_range: params.date_range || 'ALL'
+    };
+    console.log("Passed payload===>",data)
+    return authAxios(getEventtList, data);
+  }
+
+  export function getEventsResponse(params = {}) {
+    const data = {
+      event_id: '2',
+      event_type: params.event_type || "",
+      date_range: params.date_range || 'ALL'
+    };
+    console.log("Passed payload===>",data)
+    return authAxios(getEventResponse, data);
+  }
+
+  export function processEventResponse(event_data) {
+    let data = {};
+    if (event_data) {
+      data = event_data;
+    }
+    console.log('Data to be sent:', data);
+    return authAxiosFilePost(processEventRes, data)
   }

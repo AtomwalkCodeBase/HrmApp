@@ -184,18 +184,18 @@ const ClaimCard = ({ claim, onPress, onViewFile, getStatusText }) => {
       {(status === 'A' || status === 'R') && claim.approved_date && (
         <ApprovalInfo>
           <ApprovalText>
-            {status === 'A' ? 'Approved' : 'Rejected'} by {claim.approved_by} on {claim.approved_date}
+            {status === 'A' ? 'Approved' : 'Rejected'} on {claim.approved_date}
           </ApprovalText>
         </ApprovalInfo>
       )}
 
-      {status === 'F' && claim.approved_by && (
+      {/* {status === 'F' && claim.approved_by && (
         <ApprovalInfo>
           <ApprovalText>
             Forwarded by {claim.approved_by}
           </ApprovalText>
         </ApprovalInfo>
-      )}
+      )} */}
     </ClaimCardContainer>
   );
 };

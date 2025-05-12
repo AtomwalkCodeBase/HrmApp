@@ -319,6 +319,8 @@ const max_leave = profile?.emp_data?.max_no_leave;
             isVisible={isModalVisible}
             leave={selectedLeave}
             onClose={closeModal}
+            onCancelLeave={cancelLeave}  // Add this line
+            showCancelButton={selectedLeave.status_display === 'Submitted'}
           />
         )}
         {selectedLeave && (

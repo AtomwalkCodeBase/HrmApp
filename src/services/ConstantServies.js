@@ -4,13 +4,15 @@ const getDbName = async () => {
   let dbName = await AsyncStorage.getItem('dbName');
   return dbName;
 }
-// const localhost = "https://www.atomwalk.com"
 const localhost = "https://www.atomwalk.com"
+const newlocalhost = "https://crm.atomwalk.com"
 
 const apiURL = "/api";
+const apiURLHR = "/hr_api";
 const db_name = getDbName();
 
-export const endpoint = `${localhost}${apiURL}`;
+export const endpoint = `${newlocalhost}${apiURL}`;
+export const newendpoint = `${newlocalhost}${apiURLHR}`;
 
 export const productListURL = `${endpoint}/products/${db_name}/`;
 export const productDetailURL = id => `${endpoint}/products/${db_name}/${id}/`;
@@ -30,7 +32,7 @@ export const addressUpdateURL = id => `${endpoint}/address/update/${db_name}/${i
 export const addressDeleteURL = id => `${endpoint}/address/delete/${db_name}/${id}/`;
 export const userSignUpURL = `${endpoint}/customer_sign_up/${db_name}/`;
 export const userLoginURL = `${endpoint}/customer_login/${db_name}/`;
-export const loginURL = `${localhost}/rest-auth/login/`;
+export const loginURL = `${newlocalhost}/rest-auth/login/`;
 export const resetPasswordURL = `${endpoint}/reset_password/${db_name}/`;
 export const resetPasswordConfirmURL = `${endpoint}/reset_password_confirm/`;
 export const changePasswordURL = `${endpoint}/change_password/`;
@@ -54,21 +56,24 @@ export const getOrderListURL = `${endpoint}/order_list/${db_name}/`;
 export const updateTaskURL = `${endpoint}/update_task/${db_name}/`;
 export const updateLeadStatusURL = `${endpoint}/update_lead_status/${db_name}/`;
 export const getUserListURL = `${endpoint}/user_list/${db_name}/`;
-export const getEmpLeavedata = `${endpoint}/get_employee_leave/${db_name}/`;
-export const addEmpLeave = `${endpoint}/process_employee_leave/${db_name}/`;
+export const getEmpLeavedata = `${newendpoint}/get_employee_leave/${db_name}/`;
+export const addEmpLeave = `${newendpoint}/process_employee_leave/${db_name}/`;
 export const addClaim = `${endpoint}/add_claim/${db_name}/`;
 export const processClaim= `${endpoint}/process_claim/${db_name}/`;
-export const getEmpClaimdata = `${endpoint}/get_claim_list/${db_name}/`;
-export const getExpenseItemList = `${endpoint}/expense_item_list/${db_name}/`;
+export const getEmpClaimdata = `${newendpoint}/get_claim_list/${db_name}/`;
+export const getExpenseItemList = `${newendpoint}/expense_item_list/${db_name}/`;
 export const getProjectList = `${endpoint}/project_list/${db_name}/`;
-export const getEmpAttendanceData = `${endpoint}/get_employee_attendance/${db_name}/`;
-export const getEmpHolidayData = `${endpoint}/get_holiday_data/${db_name}/`;
-export const empCheckData = `${endpoint}/process_employee_attendance/${db_name}/`;
+export const getEmpAttendanceData = `${newendpoint}/get_employee_attendance/${db_name}/`;
+export const getEmpHolidayData = `${newendpoint}/get_holiday_data/${db_name}/`;
+export const empCheckData = `${newendpoint}/process_employee_attendance/${db_name}/`;
 export const getClaimApproverList = `${endpoint}/get_claim_approve_list/${db_name}/`;
 export const getfiletotext = `${endpoint}/get_file_to_text/${db_name}/`;
 // export const getAppointeeList = `${endpoint}/products/${db_name}/`;
-export const processAppointee = `${endpoint}/process_employee_job/${db_name}/`;
-export const getEmployeeRequestList = `${endpoint}/get_employee_request/${db_name}/`;
-export const getEmployeeRequestCategory = `${endpoint}/get_request_category/${db_name}/`;
-export const processEmployeeRequest = `${endpoint}/process_employee_request/${db_name}/`;
+export const processAppointee = `${newendpoint}/process_employee_job/${db_name}/`;
+export const getEmployeeRequestList = `${newendpoint}/get_employee_request/${db_name}/`;
+export const getEmployeeRequestCategory = `${newendpoint}/get_request_category/${db_name}/`;
+export const processEmployeeRequest = `${newendpoint}/process_employee_request/${db_name}/`;
+export const getEventtList = `${newendpoint}/get_employee_events/${db_name}/`;
+export const getEventResponse = `${newendpoint}/get_event_response/${db_name}/`;
+export const processEventRes = `${newendpoint}/process_emp_event_response/${db_name}/`;
 
