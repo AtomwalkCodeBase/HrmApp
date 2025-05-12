@@ -23,6 +23,7 @@ import ImageViewer from 'react-native-image-zoom-viewer';
 import { getEventsResponse, processEventResponse } from '../services/productServices';
 import moment from 'moment';
 import CommentInputInline from '../components/CommentInputInline';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -43,17 +44,30 @@ const EventDetailsScreen = (props) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Set current user's empId from props.data
-    if (props?.data?.empId) {
-      setCurrentUserEmpId(props.data.empId);
-    }
+    const fetchEmpId = async () => {
+      try {
+        const profileData = await AsyncStorage.getItem('profile');
+        if (profileData) {
+          const parsedProfile = JSON.parse(profileData);
+          const empIdFromStorage = parsedProfile?.emp_data?.emp_id || '';
+          // setEmpId(empIdFromStorage);
+          setCurrentUserEmpId(empIdFromStorage);
+        }
+      } catch (error) {
+        console.error("Error fetching empId from AsyncStorage:", error);
+      }
+    };
+  
+    fetchEmpId();
     fetchResponse();
+    
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 800,
       useNativeDriver: true,
     }).start();
   }, []);
+  
   
   // Parse the event details from props
   let eventDetails = {};
@@ -77,7 +91,6 @@ const EventDetailsScreen = (props) => {
     }
   };
 
-  console.log("Event details----",eventDetails)
 
   const fetchResponse = () => {
     setLoading(true);
@@ -99,7 +112,6 @@ const EventDetailsScreen = (props) => {
         setRefreshing(false);
       });
   };
-  // console.log("Responses loaded:", responses);
 
   const handleAddResponse = async (text, fileUri = null, fileName = null, fileMimeType = null) => {
     if (!text.trim() && !fileUri) {
@@ -121,7 +133,7 @@ const EventDetailsScreen = (props) => {
       });
     }
     
-    formData.append('emp_id', empId);
+    formData.append('emp_id', currentUserEmpId);
     formData.append('event_id', `${eventDetails.id}`);
     formData.append('call_mode', 'ADD');
     formData.append('r_text', text);
@@ -132,7 +144,6 @@ const EventDetailsScreen = (props) => {
         fetchResponse(); // Refresh comments
         setIsSuccessModalVisible(true);
         setTimeout(() => setIsSuccessModalVisible(false), 2000);
-        // console.log("Success--->",res)
       } else {
         console.error('Unexpected response:', res);
         Alert.alert('Comment Submission Error', 'Failed to add comment. Unexpected response.');
@@ -157,7 +168,7 @@ const EventDetailsScreen = (props) => {
       });
     }
     
-    formData.append('emp_id', empId);
+    formData.append('emp_id', currentUserEmpId);
     // formData.append('event_id', `${eventDetails.id}`);
     formData.append('event_id', `${responseId}`);
     formData.append('call_mode', 'UPDATE');
@@ -175,7 +186,6 @@ const EventDetailsScreen = (props) => {
       }
     } catch (error) {
       Alert.alert('Update Failed', `Failed to update comment: ${error.response?.data?.detail || error.message}`);
-      // console.log('Response error---',error.response?.data?.detail || error.message)
     } finally {
       setLoading(false);
     }
@@ -194,7 +204,7 @@ const EventDetailsScreen = (props) => {
             setLoading(true);
             
             const formData = new FormData();
-            formData.append('emp_id', empId);
+            formData.append('emp_id', currentUserEmpId);
             // formData.append('event_id', `${eventDetails.id}`);
             formData.append('event_id', `${responseId}`);
             formData.append('call_mode', 'DELETE');
@@ -232,12 +242,11 @@ const EventDetailsScreen = (props) => {
     'X': { label: 'Cancelled', color: '#F44336' }
   };
 
-  console.log("Resp----------",responses,empId)
   
 
   const renderResponseItem = (response) => {
-    const isCurrentUserResponse = response.r_emp_id === empId;
-    const isEventCreator = eventDetails.emp_id === empId;
+    const isCurrentUserResponse = response.r_emp_id === currentUserEmpId;
+    const isEventCreator = eventDetails.emp_id === currentUserEmpId;
     const isEditing = editingResponse?.id === response.id;
     
     // Determine bubble width based on screen size

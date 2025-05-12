@@ -57,7 +57,7 @@ const EventCard = ({ event, onPress }) => {
   const getStatusStyle = (status) => {
     const statusMap = {
       'A': { display: 'Active', bg: '#E8F5E9', text: '#388E3C' },
-      'I': { display: 'Inactive', bg: '#F5F5F5', text: '#757575' },
+      'P': { display: 'Planned', bg: '#FFC107', text: '#454545' },
       'C': { display: 'Cancelled', bg: '#FFEBEE', text: '#D32F2F' },
     };
     
@@ -67,6 +67,7 @@ const EventCard = ({ event, onPress }) => {
   const formattedDate = formatEventDate(event.event_date);
   const typeColor = getEventTypeColor(event.event_type);
   const statusInfo = getStatusStyle(event.event_status);
+
 
   return (
     <TouchableOpacity 

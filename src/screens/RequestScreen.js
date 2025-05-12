@@ -87,7 +87,6 @@ const RequestScreen = (props) => {
     });
   };
 
-  console.log("Request===",requestData)
 
   const fetchRequest = () => {
     setLoading(true);
@@ -110,7 +109,6 @@ const RequestScreen = (props) => {
   };
 
   const handleCardPress = (item) => {
-    console.log("Card data===",item)
     setSelectedRequest(item);
     setIsModalVisible(true);
   };

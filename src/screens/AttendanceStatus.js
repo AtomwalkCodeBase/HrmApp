@@ -132,8 +132,6 @@ const AttendanceStatus = (props) => {
   
   const navigation = useNavigation();
 
-  // console.log('Att Data====>',attData[2]?.geo_data)
-  // console.log('Attendance Data---->',attendance)
 
   
   useLayoutEffect(() => {
@@ -163,7 +161,6 @@ const AttendanceStatus = (props) => {
       processAttendanceData(res.data);
     });
     getEmpHoliday(data).then((res) => {
-      // console.log('Holiday Data---',res.data)
       processHolidayData(res.data);
     });
   };

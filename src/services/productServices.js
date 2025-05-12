@@ -13,7 +13,6 @@ export function getEmpLeave(leave_type , emp_id, year) {
         data['year'] = year;
     }
   
-    // console.log('getUserTasks', task_type, userTaskListURL, data)
     return authAxios(getEmpLeavedata, data)
   }
   
@@ -22,7 +21,6 @@ export function getEmpLeave(leave_type , emp_id, year) {
     if (leave_type) {
       data['leave_data'] = leave_type;
     }
-    // console.log('Data to be sent:', data);
     return authAxiosPost(addEmpLeave, data)
   
   }
@@ -32,7 +30,6 @@ export function getEmpLeave(leave_type , emp_id, year) {
     if (claim_data) {
       data = claim_data;
     }
-    // console.log('Data to be sent:', claim_data);
     return authAxiosFilePost(addClaim, claim_data)
   }
 
@@ -41,7 +38,6 @@ export function getEmpLeave(leave_type , emp_id, year) {
     if (claim_type) {
       data['claim_data'] = claim_type;
     }
-    // console.log('Data to be sent:', data);
     return authAxiosPost(processClaim, data)
   
   }
@@ -56,7 +52,6 @@ export function getEmpLeave(leave_type , emp_id, year) {
       'call_mode':res
     };
     
-    // console.log(res)
     return authAxios(getEmpClaimdata, data)
   }
 
@@ -75,7 +70,6 @@ export function getEmpLeave(leave_type , emp_id, year) {
       'month':res.month,
       'year': res.year
     };
-    console.log('Final response data',data)
     return authAxios(getEmpAttendanceData, data)
   }
 
@@ -83,7 +77,6 @@ export function getEmpLeave(leave_type , emp_id, year) {
     let data = {
       'year': res.year
     };
-    // console.log(data,'Final response data')
     return authAxios(getEmpHolidayData, data)
   }
 
@@ -93,13 +86,11 @@ export function getEmpLeave(leave_type , emp_id, year) {
       data['attendance_data'] = checkin_data;
       // data = checkin_data;
     }
-    // console.log('Data to be sent:', data);
     return authAxiosPost(empCheckData, data)
   }
 
 
   export function imagetotext(Uri) {
-    // console.log('getUserList3434',Uri)
     let data = {};
     data = Uri
     return authAxiosFilePost(getfiletotext, data);
@@ -114,7 +105,6 @@ export function getEmpLeave(leave_type , emp_id, year) {
     if (res) {
       data['emp_data'] = res;
     }
-    // console.log('Data to be sent:', data);
     return authAxiosPost(processAppointee, data)
   
   }
@@ -137,7 +127,7 @@ export function getEmpLeave(leave_type , emp_id, year) {
     // if (claim_data) {
     //   data = claim_data;
     // }
-    console.log('Data to be sent:', request_data);
+    // console.log('Data to be sent:', request_data);
     return authAxiosFilePost(processEmployeeRequest, request_data)
   }
 
@@ -147,7 +137,6 @@ export function getEmpLeave(leave_type , emp_id, year) {
       event_type: params.event_type || "",
       date_range: params.date_range || 'ALL'
     };
-    console.log("Passed payload===>",data)
     return authAxios(getEventtList, data);
   }
 
@@ -157,7 +146,6 @@ export function getEmpLeave(leave_type , emp_id, year) {
       event_type: params.event_type || "",
       date_range: params.date_range || 'ALL'
     };
-    console.log("Passed payload===>",data)
     return authAxios(getEventResponse, data);
   }
 
@@ -166,6 +154,5 @@ export function getEmpLeave(leave_type , emp_id, year) {
     if (event_data) {
       data = event_data;
     }
-    console.log('Data to be sent:', data);
     return authAxiosFilePost(processEventRes, data)
   }

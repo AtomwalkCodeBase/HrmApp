@@ -121,7 +121,6 @@ const ApplyLeave = (props) => {
         setErrorMessage(msg);
         setIsErrorModalVisible(true);
       
-        console.log('Error==', msg);
       });      
   };
 

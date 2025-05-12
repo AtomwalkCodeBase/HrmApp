@@ -50,8 +50,6 @@ const ProfileScreen = () => {
   const handleQRPress = () => setIsModalVisible(true);
   const handleCloseModal = () => setIsModalVisible(false);
 
-  console.log('Prf====',profile.emp_data)
-
 
   return (
     <>

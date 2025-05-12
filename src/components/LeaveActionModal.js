@@ -110,7 +110,6 @@ const LeaveActionModal = ({ isVisible, leave, onClose, actionType, setShowSucces
       })
       .catch((error) => {
         setError(`Failed to ${actionType.toLowerCase()} leave: ${error.message}`);
-        console.log('Error message---',error)
       });
   };
 

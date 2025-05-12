@@ -62,7 +62,6 @@ const AddHelp = (props) => {
     getRequestCategory()
       .then((res) => {
         setRequestCategories(res.data);
-        // console.log("sdjcjbbsjk",res.data);
         const filtered = res.data.filter(category => category.request_type === call_type);
         setFilteredCategories(filtered);
       })
@@ -138,7 +137,6 @@ const AddHelp = (props) => {
 
     try {
       const res = await postEmpRequest(formData);
-      console.log('API Response:', res);
       
       if (res.status === 200) {
         setIsSuccessModalVisible(true);
@@ -162,11 +160,9 @@ const AddHelp = (props) => {
     } finally {
       setIsLoading(false);
 
-      console.log('Form Data==',formData)
     }
   };
 
-  console.log("Category===",requestCategories);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>

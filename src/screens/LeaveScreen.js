@@ -199,7 +199,6 @@ const LeaveScreen = () => {
       .finally(() => setLoading(false));
   };
 
-  console.log('Response data==',leaveData);
 
   const handleBackPress = () => {
     router.navigate({
@@ -224,7 +223,6 @@ const count = leaveData.length;
 const leaveSum = leaveData.reduce((sum, leave) => sum + parseFloat(leave.no_leave_count || 0), 0);
 const max_leave = profile?.emp_data?.max_no_leave;
 
-  console.log('Emp data',profile?.emp_data)
 
   const getStatusStyles = (status_display) => {
     switch (status_display) {

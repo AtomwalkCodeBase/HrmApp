@@ -73,7 +73,6 @@ const HomePage = ({ navigation }) => {
   const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
   const [previousDayUnchecked, setPreviousDayUnchecked] = useState(false);
   
-  // console.log("Emp Id--->",empId)
   // Active events
   const [activeEvents, setActiveEvents] = useState([]);
   const [eventData, setEventData] = useState([]);
@@ -104,7 +103,6 @@ const [eventLoading, setEventLoading] = useState(true);
 
   
 
-  // console.log("Emp===",profile)
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -125,7 +123,6 @@ const [eventLoading, setEventLoading] = useState(true);
         }
       }
       
-      console.log("Profile===", profileData);
       setEmployeeData(profileData);
       setIsManager(profileData.user_group?.is_manager || false);
       
@@ -456,7 +453,6 @@ const [eventLoading, setEventLoading] = useState(true);
   };
 
   const handleEventPress = (event) => {
-    // console.log("Event Data===",event)
     router.push({
       pathname: 'EventDetails',
       params: {

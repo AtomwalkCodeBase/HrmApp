@@ -218,9 +218,7 @@ const EventScreen = (props) => {
             ListHeaderComponent={renderHeader}
             ListEmptyComponent={
               <EmptyMessage 
-                message="No events found"
-                subMessage={`There are no ${activeFilter === 'All' ? '' : activeFilter.toLowerCase() + ' '}events scheduled`}
-                iconName="event-busy"
+                data={`${activeFilter === 'All' ? '' : activeFilter.toLowerCase() + ' '}events`}
               />
             }
             refreshControl={

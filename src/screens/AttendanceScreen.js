@@ -189,8 +189,6 @@ const AddAttendance = () => {
     setIsSuccessModalVisible(false);
   };
 
-  console.log("Emp:",employeeData.emp_data)
-
   // Determine button states
   const isCheckInDisabled = checkedIn || attendance.geo_status === 'O' || !!attendance.start_time;
   const isCheckOutDisabled = !checkedIn || attendance.geo_status !== 'I' || !!attendance.end_time;

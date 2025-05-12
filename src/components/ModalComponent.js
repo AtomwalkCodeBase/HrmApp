@@ -4,7 +4,6 @@ import styled from 'styled-components/native';
 import { MaterialIcons } from '@expo/vector-icons';
 
 const ModalComponent = ({ isVisible, leave, claim, helpRequest, onClose, onCancelLeave, showCancelButton  }) => {
-  console.log("Claim---",claim)
   return (
     <Modal visible={isVisible} transparent={true} animationType="fade">
       <ModalOverlay>

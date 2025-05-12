@@ -165,7 +165,6 @@ const ApproveClaimDetails = (props) => {
   };
 
   const handleViewFile = (fileUrl) => {
-    // console.log('File Url===',fileUrl)
       const fileExtension = fileUrl.split('.').pop().split('?')[0].toLowerCase();
       if (['jpg', 'jpeg', 'png'].includes(fileExtension)) {
         setSelectedImageUrl(fileUrl);
@@ -209,7 +208,6 @@ const ApproveClaimDetails = (props) => {
         const maxClaimAmount = managerData.approve_data.find(data => data.max_claim_amt)?.max_claim_amt;
         setClaimGradeLevel(profile?.emp_data?.grade_level);
 
-        // console.log('Manager data-----',profile)
 
         // Check if the manager's grade level is lower than the claim grade level
         if (approveGradeLevel > claimGradeLevel) {
