@@ -24,6 +24,7 @@ import { getEventsResponse, processEventResponse } from '../services/productServ
 import moment from 'moment';
 import CommentInputInline from '../components/CommentInputInline';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import SuccessModal from '../components/SuccessModal';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -38,6 +39,7 @@ const EventDetailsScreen = (props) => {
   const [responses, setResponses] = useState([]);
   const [editingResponse, setEditingResponse] = useState(null);
   const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
+  const [successModalMessage, setSuccessModalMessage] = useState("");
   const scrollViewRef = useRef(null);
   
   // Animation values
@@ -142,8 +144,8 @@ const EventDetailsScreen = (props) => {
       const res = await processEventResponse(formData);
       if (res.status === 200) {
         fetchResponse(); // Refresh comments
+        setSuccessModalMessage("Comment posted successfully!");
         setIsSuccessModalVisible(true);
-        setTimeout(() => setIsSuccessModalVisible(false), 2000);
       } else {
         console.error('Unexpected response:', res);
         Alert.alert('Comment Submission Error', 'Failed to add comment. Unexpected response.');
@@ -179,7 +181,8 @@ const EventDetailsScreen = (props) => {
       if (res.status === 200) {
         fetchResponse(); // Refresh comments
         setEditingResponse(null);
-        Alert.alert('Success', 'Your comment has been updated.');
+        setSuccessModalMessage("Comment updated successfully!");
+        setIsSuccessModalVisible(true);
       } else {
         console.error('Unexpected response:', res);
         Alert.alert('Update Error', 'Failed to update comment. Unexpected response.');
@@ -213,7 +216,8 @@ const EventDetailsScreen = (props) => {
               const res = await processEventResponse(formData);
               if (res.status === 200) {
                 fetchResponse(); // Refresh comments
-                Alert.alert('Success', 'Your comment has been deleted.');
+                setSuccessModalMessage("Comment deleted successfully!");
+                setIsSuccessModalVisible(true);
               } else {
                 console.error('Unexpected response:', res);
                 Alert.alert('Delete Error', 'Failed to delete comment. Unexpected response.');
@@ -509,6 +513,11 @@ const EventDetailsScreen = (props) => {
           />
         </View>
       </SafeAreaView>
+      <SuccessModal
+  visible={isSuccessModalVisible}
+  onClose={() => setIsSuccessModalVisible(false)}
+  message={successModalMessage}
+/>
     </KeyboardAvoidingView>
   );
 };

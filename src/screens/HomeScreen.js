@@ -135,22 +135,7 @@ const [eventLoading, setEventLoading] = useState(true);
       setCompany(companyRes.data);
       
       // Mock active events data
-      setActiveEvents([
-        {
-          id: 1,
-          title: 'Team Building',
-          description: 'Join us for exciting team activities in the conference room.',
-          time: '2:00 PM - 4:00 PM',
-          icon: 'people'
-        },
-        {
-          id: 2,
-          title: 'Weekly Meeting',
-          description: 'Discuss project updates and upcoming deadlines.',
-          time: '10:00 AM - 11:00 AM',
-          icon: 'event-note'
-        }
-      ]);
+      
       
       // Set current date and time
       const date = moment().format('DD-MM-YYYY');

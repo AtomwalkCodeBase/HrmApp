@@ -23,14 +23,16 @@ import { AppContext } from '../../context/AppContext';
 import Loader from '../../src/components/old_components/Loader';
 import ErrorModal from '../../src/components/ErrorModal';
 import { LinearGradient } from 'expo-linear-gradient';
+import ConfirmationModal from '../../src/components/ConfirmationModal';
 
 const { width, height } = Dimensions.get('window');
-
 
 const scaleWidth = (size) => (width / 375) * size;
 const scaleHeight = (size) => (height / 812) * size;
 
 const AuthScreen = () => {
+    
+      const { logout } = useContext(AppContext);
     const { login, setIsLoading, isLoading } = useContext(AppContext);
     const router = useRouter();
     const [mPIN, setMPIN] = useState(['', '', '', '']);
@@ -39,8 +41,10 @@ const AuthScreen = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [isNetworkError, setIsNetworkError] = useState(false);
     const [userName, setUserName] = useState('');
-    const [showPinInput, setShowPinInput] = useState(false);
+    const [showBiomatricOption, setShowBiomatricOption] = useState(false);
+    const [showPinInput, setShowPinInput] = useState(!showBiomatricOption);
     const [showFingerprint, setShowFingerprint] = useState(false);
+    const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
 
     const openPopup = () => setModalVisible(true);
     const maxAttempts = 5;
@@ -52,6 +56,13 @@ const AuthScreen = () => {
             if (name) setUserName(name);
         };
         loadUserName();
+
+        const getBioMatricS = async () => {
+            const bioStatus = await AsyncStorage.getItem('useFingerprint');
+            setShowBiomatricOption(bioStatus === 'true');
+            setShowPinInput(bioStatus !== 'true');
+        };
+        getBioMatricS();
         
         NetInfo.fetch().then(netInfo => {
             if (netInfo.isConnected) {
@@ -96,11 +107,11 @@ const AuthScreen = () => {
             } else {
                 const remaining = attemptsRemaining - 1;
                 setAttemptsRemaining(remaining);
-                if (remaining > 0) {
-                    Alert.alert('Incorrect mPIN', `${remaining} attempts remaining`);
-                } else {
-                    Alert.alert('Account Locked', 'Too many incorrect attempts.');
-                }
+                // if (remaining > 0) {
+                //     Alert.alert('Incorrect PIN', `${remaining} attempts remaining`);
+                // } else {
+                //     Alert.alert('Account Locked', 'Too many incorrect attempts.');
+                // }
             }
         }, 1000);
     };
@@ -163,27 +174,29 @@ const AuthScreen = () => {
                             <View style={styles.authButtonIconContainer}>
                                 <Icon name="lock-closed-outline" size={22} color="#7722F9" />
                             </View>
-                            <Text style={styles.authButtonText}>Login with mPIN</Text>
+                            <Text style={styles.authButtonText}>Login with PIN</Text>
                             <Icon name="chevron-forward-outline" size={20} color="#777" style={styles.authButtonArrow} />
                         </TouchableOpacity>
                         
-                        <TouchableOpacity 
-                            style={styles.authButton}
-                            onPress={() => {
-                                setShowFingerprint(true);
-                                checkNetworkAndAuthenticate();
-                            }}
-                        >
-                            <View style={styles.authButtonIconContainer}>
-                                <Icon name="finger-print-outline" size={22} color="#7722F9" />
-                            </View>
-                            <Text style={styles.authButtonText}>Login with Fingerprint</Text>
-                            <Icon name="chevron-forward-outline" size={20} color="#777" style={styles.authButtonArrow} />
-                        </TouchableOpacity>
+                        {showBiomatricOption && (
+                            <TouchableOpacity 
+                                style={styles.authButton}
+                                onPress={() => {
+                                    setShowFingerprint(true);
+                                    checkNetworkAndAuthenticate();
+                                }}
+                            >
+                                <View style={styles.authButtonIconContainer}>
+                                    <Icon name="finger-print-outline" size={22} color="#7722F9" />
+                                </View>
+                                <Text style={styles.authButtonText}>Login with Fingerprint</Text>
+                                <Icon name="chevron-forward-outline" size={20} color="#777" style={styles.authButtonArrow} />
+                            </TouchableOpacity>
+                        )}
                     </View>
                 ) : showPinInput ? (
                     <View style={styles.card}>
-                        <Text style={styles.title}>Enter your 4-digit mPIN</Text>
+                        <Text style={styles.title}>Enter your 4-digit PIN</Text>
                         <View style={styles.mPINContainer}>
                             {mPIN.map((value, index) => (
                                 <TextInput
@@ -205,7 +218,7 @@ const AuthScreen = () => {
                             <View style={styles.errorContainer}>
                                 <Icon name="alert-circle-outline" size={16} color="#E02020" />
                                 <Text style={styles.errorText}>
-                                    Incorrect PIN. {attemptsRemaining} attempts remaining.
+                                    Incorrect PIN. Please Try Again.
                                 </Text>
                             </View>
                         )}
@@ -216,8 +229,8 @@ const AuthScreen = () => {
                                     backgroundColor: '#fff',
                                     borderColor: '#4d88ff',
                                     borderWidth: 1,
-                                    shadowColor: 'transparent', // Optional: remove shadow for disabled state
-                                    elevation: 0, // Optional: reduce elevation for disabled state
+                                    shadowColor: 'transparent',
+                                    elevation: 0,
                                 }
                             ]}
                             onPress={handleMPINSubmit}
@@ -235,26 +248,29 @@ const AuthScreen = () => {
 
                         <TouchableOpacity onPress={openPopup} style={styles.forgotContainer}>
                             <Icon name="help-circle-outline" size={16} color="#9C5EF9" />
-                            <Text style={styles.forgotText}>Forgot mPIN</Text>
+                            <Text style={styles.forgotText}>Forgot PIN</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity 
-                            style={styles.backButton}
-                            onPress={() => setShowPinInput(false)}
-                        >
-                            <Icon name="arrow-back-outline" size={16} color="#9C5EF9" style={styles.backIcon} />
-                            <Text style={styles.backButtonText}>Back to Login Options</Text>
-                        </TouchableOpacity>
+                        
+                        {showBiomatricOption && (
+                            <TouchableOpacity 
+                                style={styles.backButton}
+                                onPress={() => setShowPinInput(false)}
+                            >
+                                <Icon name="arrow-back-outline" size={16} color="#9C5EF9" style={styles.backIcon} />
+                                <Text style={styles.backButtonText}>Back to Login Options</Text>
+                            </TouchableOpacity>
+                        )}
                     </View>
                 ) : (
                     <View style={styles.card}>
                         <Text style={styles.title}>Fingerprint Authentication</Text>
                         <TouchableOpacity 
-                        style={styles.fingerprintIconContainer} 
-                        onPress={() => {
-                            checkNetworkAndAuthenticate();
-                        }}
+                            style={styles.fingerprintIconContainer} 
+                            onPress={() => {
+                                checkNetworkAndAuthenticate();
+                            }}
                         >
-                        <Icon name="finger-print" size={80} color="#9C5EF9" />
+                            <Icon name="finger-print" size={80} color="#9C5EF9" />
                         </TouchableOpacity>
 
                         <Text style={styles.fingerprintHint}>
@@ -265,7 +281,7 @@ const AuthScreen = () => {
                             onPress={() => setShowFingerprint(false)}
                         >
                             <Icon name="arrow-back-outline" size={16} color="#9C5EF9" style={styles.backIcon} />
-                            <Text style={styles.backButtonText}>Use mPIN instead</Text>
+                            <Text style={styles.backButtonText}>Use PIN instead</Text>
                         </TouchableOpacity>
                     </View>
                 )}
@@ -283,9 +299,21 @@ const AuthScreen = () => {
                 onClose={() => setIsNetworkError(false)}
                 onRetry={checkNetworkAndAuthenticate}
             />
+            <ConfirmationModal
+            visible={isLogoutModalVisible}
+            message="Are you sure you want to logout?"
+            onConfirm={() => {
+              setIsLogoutModalVisible(false);
+              logout();
+            }}
+            onCancel={() => setIsLogoutModalVisible(false)}
+            confirmText="Logout"
+            cancelText="Cancel"
+          />
         </SafeAreaView>
     );
 };
+
 
 const styles = StyleSheet.create({
     container: {
