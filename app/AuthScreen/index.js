@@ -213,10 +213,10 @@ useEffect(() => {
                     <Title>Login</Title>
                     
                     <InputContainer>
-                      <InputLabel>User ID</InputLabel>
+                      <InputLabel>Enter your User ID / Mobile Number</InputLabel>
                       <InputWrapper>
                         <Input
-                          placeholder="Enter your username"
+                          placeholder="User ID / Mobile Number"
                           value={username}
                           onChangeText={setUsername}
                           placeholderTextColor="#999"
@@ -224,10 +224,10 @@ useEffect(() => {
                         />
                       </InputWrapper>
 
-                      <InputLabel>Password</InputLabel>
+                      <InputLabel>Enter your Password</InputLabel>
                       <InputWrapper>
                         <Input
-                          placeholder="Enter your password"
+                          placeholder="Password"
                           value={password}
                           onChangeText={setPassword}
                           secureTextEntry={!isPasswordVisible}
@@ -269,7 +269,7 @@ useEffect(() => {
                 </MainContent>
 
             <Footer style={styles.fixedFooter}>
-              <FooterText>Version Code: 1.0.8</FooterText>
+              <FooterText>Version Code: 1.0.12</FooterText>
             </Footer>
           </Container>
         {/* </KeyboardAvoidingView> */}

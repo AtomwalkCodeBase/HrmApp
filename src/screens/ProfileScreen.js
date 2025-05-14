@@ -210,6 +210,7 @@ const ProfileScreen = () => {
           </View>
 
           {/* Security Section */}
+          {userPin && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Security Settings</Text>
             
@@ -230,6 +231,7 @@ const ProfileScreen = () => {
               />
             </View>
           </View>
+          )}
 
           {/* Action Buttons */}
           <View style={styles.actionsContainer}>
