@@ -247,9 +247,9 @@ useEffect(() => {
                       <LoginButton 
                         onPress={handlePress}
                         disabled={isLoginDisabled}
-                        style={{ backgroundColor: isLoginDisabled ? '#fff' : '#0062cc' }}
+                        style={{ backgroundColor: isLoginDisabled ? '#fff' : '#007AFF' }}
                       >
-                        <LoginButtonText style={{ color: isLoginDisabled ? '#454545' : '#fff' }}>
+                        <LoginButtonText style={{ color: isLoginDisabled ? '#3333' : '#fff' }}>
                           LOGIN
                         </LoginButtonText>
                       </LoginButton>
@@ -440,8 +440,8 @@ const ErrorText = styled.Text`
 `;
 
 const LoginButton = styled.TouchableOpacity`
-  background-color: ${props => props.disabled ? '#fff' : '#0062cc'};
-  border: 1px solid #0062cc;
+  background-color: ${props => props.disabled ? '#fff' : '#007AFF'};
+  border: 1px solid rgb(207, 214, 221);
   padding: ${scaleHeight(15)}px;
   border-radius: ${scaleWidth(5)}px;
   align-items: center;

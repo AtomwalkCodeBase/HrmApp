@@ -13,6 +13,9 @@ import Loader from '../components/old_components/Loader';
 import ConfirmationModal from '../components/ConfirmationModal';
 
 const { width, height } = Dimensions.get('window');
+const isSmallScreen = width < 375; // iPhone SE and similar small devices
+const isMediumScreen = width >= 375 && width < 414; // Most standard phones
+const isLargeScreen = width >= 414; // Plus/Pro Max sizes
 
 const ProfileScreen = () => {
   const { logout } = useContext(AppContext);
@@ -96,37 +99,79 @@ const ProfileScreen = () => {
       {isLoading ? (
         <Loader visible={isLoading} />
       ) : (
-        <ScrollView contentContainerStyle={styles.container}>
+        <ScrollView 
+          contentContainerStyle={styles.container}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Logout Button */}
+          <TouchableOpacity 
+            style={styles.qrButton} 
+            onPress={() => setIsLogoutModalVisible(true)}
+          >
+            <MaterialCommunityIcons name="logout" size={isSmallScreen ? 24 : 28} color="#FF0031" />
+          </TouchableOpacity>
+
           {/* Profile Header Section */}
-          <TouchableOpacity style={styles.qrButton} onPress={() => setIsLogoutModalVisible(true)}>
-          <MaterialCommunityIcons name="logout" size={28} color="#FF0031" />
-        </TouchableOpacity>
-
-
           <View style={styles.profileHeader}>
             <View style={styles.avatarContainer}>
               <Image 
                 source={{ uri: profile?.emp_data?.image || profile?.image }} 
                 style={styles.profileImage} 
+                resizeMode="cover"
               />
             </View>
             
             <View style={styles.profileInfo}>
-              <Text style={styles.userName}>{profile?.emp_data?.name || 'Employee'}</Text>
-              <Text style={styles.userNameSmall}>@{profile?.user_name}</Text>
-              {/* <Text style={styles.userRole}>{userGroup?.name || 'Employee'}</Text> */}
+              <Text 
+                style={styles.userName}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.8}
+              >
+                {profile?.emp_data?.name || 'Employee'}
+              </Text>
+              <Text 
+                style={styles.userNameSmall}
+                numberOfLines={1}
+              >
+                @{profile?.user_name}
+              </Text>
+              
               <View style={styles.roleContainer}>
-                <Text style={styles.userRole}>{userGroup?.name || 'Employee'}</Text>
+                <Text 
+                  style={styles.userRole}
+                  numberOfLines={1}
+                >
+                  {userGroup?.name || 'Employee'}
+                </Text>
               </View>
               
               <View style={styles.userMeta}>
                 <View style={styles.metaItem}>
-                  <MaterialCommunityIcons name="identifier" size={16} color="#7f8c8d" />
-                  <Text style={styles.metaText}>{profile?.emp_data?.emp_id}</Text>
+                  <MaterialCommunityIcons 
+                    name="identifier" 
+                    size={isSmallScreen ? 14 : 16} 
+                    color="#7f8c8d" 
+                  />
+                  <Text 
+                    style={styles.metaText}
+                    numberOfLines={1}
+                  >
+                    {profile?.emp_data?.emp_id}
+                  </Text>
                 </View>
                 <View style={styles.metaItem}>
-                  <MaterialCommunityIcons name="office-building" size={16} color="#7f8c8d" />
-                  <Text style={styles.metaText}>{profile?.emp_data?.department_name}</Text>
+                  <MaterialCommunityIcons 
+                    name="office-building" 
+                    size={isSmallScreen ? 14 : 16} 
+                    color="#7f8c8d" 
+                  />
+                  <Text 
+                    style={styles.metaText}
+                    numberOfLines={1}
+                  >
+                    {profile?.emp_data?.department_name}
+                  </Text>
                 </View>
               </View>
             </View>
@@ -167,7 +212,11 @@ const ProfileScreen = () => {
             
             <View style={styles.switchRow}>
               <View style={styles.switchLabel}>
-                <MaterialCommunityIcons name="fingerprint" size={20} color="#555" />
+                <MaterialCommunityIcons 
+                  name="fingerprint" 
+                  size={isSmallScreen ? 18 : 20} 
+                  color="#555" 
+                />
                 <Text style={styles.switchText}>Use Fingerprint for Login</Text>
               </View>
               <Switch
@@ -185,7 +234,11 @@ const ProfileScreen = () => {
               style={[styles.actionButton, styles.primaryButton]}
               onPress={handlePressPassword}
             >
-              <MaterialCommunityIcons name="lock" size={20} color="#fff" />
+              <MaterialCommunityIcons 
+                name="lock" 
+                size={isSmallScreen ? 18 : 20} 
+                color="#fff" 
+              />
               <Text style={styles.actionButtonText}>
                 {userPin ? 'Update Your Pin' : 'Set Your Pin'}
               </Text>
@@ -195,8 +248,14 @@ const ProfileScreen = () => {
               style={[styles.actionButton, styles.secondaryButton]}
               onPress={() => setIsLogoutModalVisible(true)}
             >
-              <MaterialCommunityIcons name="logout" size={20} color="#d9534f" />
-              <Text style={[styles.actionButtonText, { color: '#d9534f' }]}>Log Out</Text>
+              <MaterialCommunityIcons 
+                name="logout" 
+                size={isSmallScreen ? 18 : 20} 
+                color="#d9534f" 
+              />
+              <Text style={[styles.actionButtonText, { color: '#d9534f' }]}>
+                Log Out
+              </Text>
             </TouchableOpacity>
           </View>
 
@@ -204,7 +263,7 @@ const ProfileScreen = () => {
           <QRModal
             isVisible={isModalVisible}
             onClose={handleCloseModal}
-            qrValue={profile?.emp_data?.emp_id || 'Envalid Emp Id'}
+            qrValue={profile?.emp_data?.emp_id || 'Invalid Emp Id'}
           />
           
           <ConfirmationModal
@@ -231,13 +290,23 @@ const ProfileScreen = () => {
   );
 };
 
-// Updated InfoRow Component
 const InfoRow = ({ icon, label, value }) => (
   <View style={styles.infoRow}>
-    <MaterialCommunityIcons name={icon} size={20} color="#555" style={styles.infoIcon} />
+    <MaterialCommunityIcons 
+      name={icon} 
+      size={isSmallScreen ? 18 : 20} 
+      color="#555" 
+      style={styles.infoIcon} 
+    />
     <View style={styles.infoContent}>
       <Text style={styles.infoLabel}>{label}</Text>
-      <Text style={styles.infoValue}>{value}</Text>
+      <Text 
+        style={styles.infoValue}
+        numberOfLines={1}
+        ellipsizeMode="tail"
+      >
+        {value}
+      </Text>
     </View>
   </View>
 );
@@ -246,35 +315,34 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     backgroundColor: '#f5f7fa',
-    paddingBottom: 30,
+    paddingBottom: isSmallScreen ? 20 : 30,
   },
   qrButton: {
     position: 'absolute',
-    top: 15,
-    right: 20,
+    top: isSmallScreen ? 12 : 15,
+    right: isSmallScreen ? 15 : 20,
     backgroundColor: '#FBE6EA',
-    padding: 10,
+    padding: isSmallScreen ? 8 : 10,
     borderRadius: 25,
     elevation: 3,
     zIndex: 10,
   },
-
   profileHeader: {
     backgroundColor: '#fff',
-    padding: 20,
+    padding: isSmallScreen ? 15 : 20,
     flexDirection: 'row',
     alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
   },
   avatarContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: isSmallScreen ? 70 : 80,
+    height: isSmallScreen ? 70 : 80,
+    borderRadius: isSmallScreen ? 35 : 40,
     backgroundColor: '#e8f0fe',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 20,
+    marginRight: isSmallScreen ? 15 : 20,
     overflow: 'hidden',
   },
   profileImage: {
@@ -285,22 +353,24 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   userName: {
-    fontSize: 20,
+    fontSize: isSmallScreen ? 18 : 20,
     fontWeight: '600',
     color: '#222',
     marginBottom: 4,
+    maxWidth: '90%',
   },
   userNameSmall: {
-    fontSize: 14,
+    fontSize: isSmallScreen ? 12 : 14,
     color: '#7f8c8d',
     marginBottom: 6,
+    maxWidth: '90%',
   },
-   roleContainer: {
+  roleContainer: {
     alignSelf: 'flex-start',
     marginBottom: 1,
   },
   userRole: {
-    fontSize: 14,
+    fontSize: isSmallScreen ? 12 : 14,
     color: '#2A73FC',
     fontWeight: '500',
     marginBottom: 8,
@@ -309,6 +379,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 10,
     alignSelf: 'flex-start',
+    maxWidth: '90%',
   },
   userMeta: {
     marginTop: 8,
@@ -319,16 +390,17 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   metaText: {
-    fontSize: 13,
+    fontSize: isSmallScreen ? 12 : 13,
     color: '#7f8c8d',
     marginLeft: 6,
+    maxWidth: '80%',
   },
   section: {
     backgroundColor: '#fff',
-    marginTop: 16,
-    marginHorizontal: 16,
+    marginTop: isSmallScreen ? 12 : 16,
+    marginHorizontal: isSmallScreen ? 12 : 16,
     borderRadius: 12,
-    padding: 16,
+    padding: isSmallScreen ? 12 : 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
@@ -336,10 +408,10 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: isSmallScreen ? 15 : 16,
     fontWeight: '600',
     color: '#2c3e50',
-    marginBottom: 16,
+    marginBottom: isSmallScreen ? 12 : 16,
     paddingBottom: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
@@ -347,53 +419,56 @@ const styles = StyleSheet.create({
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: isSmallScreen ? 12 : 16,
   },
   infoIcon: {
-    marginRight: 12,
+    marginRight: isSmallScreen ? 10 : 12,
   },
   infoContent: {
     flex: 1,
   },
   infoLabel: {
-    fontSize: 13,
+    fontSize: isSmallScreen ? 12 : 13,
     color: '#95a5a6',
     marginBottom: 2,
   },
   infoValue: {
-    fontSize: 15,
+    fontSize: isSmallScreen ? 14 : 15,
     color: '#34495e',
     fontWeight: '500',
+    maxWidth: '90%',
   },
   switchRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 8,
+    paddingVertical: isSmallScreen ? 6 : 8,
   },
   switchLabel: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexShrink: 1,
   },
   switchText: {
-    fontSize: 15,
+    fontSize: isSmallScreen ? 14 : 15,
     color: '#34495e',
-    marginLeft: 12,
+    marginLeft: isSmallScreen ? 8 : 12,
+    flexShrink: 1,
   },
   actionsContainer: {
-    marginTop: 24,
-    paddingHorizontal: 16,
+    marginTop: isSmallScreen ? 20 : 24,
+    paddingHorizontal: isSmallScreen ? 12 : 16,
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
+    paddingVertical: isSmallScreen ? 12 : 14,
     borderRadius: 8,
-    marginBottom: 12,
+    marginBottom: isSmallScreen ? 10 : 12,
   },
   primaryButton: {
-    backgroundColor: '#2A73FC',
+    backgroundColor: '#007AFF',
   },
   secondaryButton: {
     backgroundColor: '#fff',
@@ -401,7 +476,7 @@ const styles = StyleSheet.create({
     borderColor: '#e0e0e0',
   },
   actionButtonText: {
-    fontSize: 16,
+    fontSize: isSmallScreen ? 15 : 16,
     fontWeight: '600',
     color: '#fff',
     marginLeft: 8,
