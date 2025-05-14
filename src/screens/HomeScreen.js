@@ -451,7 +451,8 @@ const [eventLoading, setEventLoading] = useState(true);
   };
 
   // Determine button states for check-in/out
-  const isCheckInDisabled = checkedIn || attendance.geo_status === 'O' || !!attendance.start_time;
+  const isCheckInDisabled = checkedIn || attendance.geo_status === 'O' || !!attendance.start_time || !!attendance.start_time || 
+                          (employeeData?.is_shift_applicable && previousDayUnchecked) || (attendance && attendance.start_time === null);
   const isCheckOutDisabled = !checkedIn || attendance.geo_status !== 'I' || !!attendance.end_time;
 
   
