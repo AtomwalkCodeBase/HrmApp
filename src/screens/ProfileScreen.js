@@ -181,29 +181,32 @@ const ProfileScreen = () => {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Personal Information</Text>
             
-            <InfoRow 
+            {profile?.emp_data?.email_id && (<InfoRow 
               icon="email" 
               label="Email" 
               value={profile?.emp_data?.email_id || 'Not available'} 
-            />
+            />)}
             
+            {(profile?.mobile_number || profile?.emp_data?.mobile_number) && (
             <InfoRow 
               icon="phone" 
               label="Mobile" 
               value={profile?.mobile_number || profile?.emp_data?.mobile_number || 'Not available'} 
             />
+            )}
             
-            <InfoRow 
+            {profile?.emp_data?.dob && (<InfoRow 
               icon="cake" 
               label="Date of Birth" 
               value={profile?.emp_data?.dob || 'Not available'} 
-            />
+            />)}
             
+            {profile?.emp_data?.date_of_join && (
             <InfoRow 
               icon="calendar" 
               label="Date of Joining" 
               value={profile?.emp_data?.date_of_join || 'Not available'} 
-            />
+            />)}
           </View>
 
           {/* Security Section */}
