@@ -122,6 +122,11 @@ const [eventLoading, setEventLoading] = useState(true);
           await AsyncStorage.setItem('profilename', profileData.emp_data.name);
         }
       }
+
+      if (profileData?.emp_data?.emp_id) {
+        setEmpId(profileData.emp_data.emp_id);
+      }
+
       
       setEmployeeData(profileData);
       setIsManager(profileData.user_group?.is_manager || false);
@@ -331,17 +336,32 @@ const [eventLoading, setEventLoading] = useState(true);
   }, [isConnected]);
 
   useFocusEffect(
-    useCallback(() => {
-      if (employeeData?.id) { // Use employeeData.id instead of empId
-        const data = {
-          emp_id: employeeData.id,
-          month: moment().format('MM'),
-          year: moment().format('YYYY'),
-        };
-        fetchAttendanceDetails(data);
-      }
-    }, [employeeData, refreshKey]) // Add employeeData to dependencies
-  );
+  useCallback(() => {
+    if (employeeData?.emp_data) {
+      const data = {
+        emp_id: employeeData.emp_data, // Use the correct emp_id path
+        month: moment().format('MM'),
+        year: moment().format('YYYY'),
+      };
+      
+      // Fetch attendance details and process them
+      getEmpAttendance(data).then((res) => {
+        setAttData(res.data);
+        const todayAttendance = res.data.find((item) => item.a_date === currentDate);
+        
+        if (todayAttendance) {
+          setCheckedIn(todayAttendance.end_time === null);
+          setStartTime(todayAttendance.start_time);
+          setAttendance(todayAttendance);
+        } else {
+          setCheckedIn(false);
+          setStartTime(null);
+          setAttendance({});
+        }
+      });
+    }
+  }, [employeeData, currentDate])
+);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -399,20 +419,39 @@ const [eventLoading, setEventLoading] = useState(true);
       id: attendanceId,
     };
   
-    postCheckIn(checkPayload)
-      .then(() => {
-        setCheckedIn(data === 'ADD');
-        setStartTime(currentTimeStr);
-        setRefreshKey((prevKey) => prevKey + 1);
-        setIsSuccessModalVisible(true);
-        if (data === 'UPDATE') setRemark('');
-      })
-      .catch(() => {
-        Alert.alert('Check Failure', 'Failed to Check.');
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+    try {
+    await postCheckIn(checkPayload);
+    
+    // Refresh attendance data immediately after successful check-in/out
+    const refreshData = {
+      emp_id: employeeData?.emp_data,
+      month: moment().format('MM'),
+      year: moment().format('YYYY'),
+    };
+    const res = await getEmpAttendance(refreshData);
+    
+    // Update all relevant states
+    setAttData(res.data);
+    const todayAttendance = res.data.find((item) => item.a_date === currentDate);
+    
+    if (todayAttendance) {
+      setCheckedIn(todayAttendance.end_time === null);
+      setStartTime(todayAttendance.start_time);
+      setAttendance(todayAttendance);
+    } else {
+      setCheckedIn(false);
+      setStartTime(null);
+      setAttendance({});
+    }
+    
+    setRefreshKey((prevKey) => prevKey + 1);
+    setIsSuccessModalVisible(true);
+    if (data === 'UPDATE') setRemark('');
+  } catch (error) {
+    Alert.alert('Check Failure', 'Failed to Check.');
+  } finally {
+    setIsLoading(false);
+  }
   };
 
 
@@ -601,37 +640,36 @@ const [eventLoading, setEventLoading] = useState(true);
             <TouchableOpacity 
               style={[
                 styles.attendanceButton, 
-                isCheckInDisabled ? styles.disabledButton : styles.checkInButton
+                (checkedIn || isCheckInDisabled) ? styles.disabledButton : styles.checkInButton
               ]}
               onPress={handleCheckIn}
-              disabled={isCheckInDisabled}
+              disabled={checkedIn || isCheckInDisabled}
             >
-              <MaterialCommunityIcons name="login" size={20} color={isCheckInDisabled ? "#888" : "#fff"} />
-              <Text style={[styles.attendanceButtonText, isCheckInDisabled ? styles.disabledButtonText : {}]}>
+              <MaterialCommunityIcons name="login" size={20} color={checkedIn || isCheckInDisabled ? "#888" : "#fff"} />
+              <Text style={[styles.attendanceButtonText, (checkedIn || isCheckInDisabled) ? styles.disabledButtonText : {}]}>
                 {employeeData?.is_shift_applicable && previousDayUnchecked 
                   ? "Complete yesterday's checkout first"
-                  : checkedIn 
+                  : (checkedIn || isCheckInDisabled) 
                     ? `Checked In`
                     : 'Check In'}
               </Text>
             </TouchableOpacity>
-              <TouchableOpacity 
-                style={[
-                  styles.attendanceButton, 
-                  isCheckOutDisabled ? styles.disabledButton : styles.checkOutButton
-                ]}
-                onPress={handleCheckOut}
-                disabled={isCheckOutDisabled}
-              >
-                <MaterialCommunityIcons name="logout" size={20} color={isCheckOutDisabled ? "#888" : "#fff"} />
-                <Text style={[styles.attendanceButtonText, isCheckOutDisabled ? styles.disabledButtonText : {}]}>
-                  {isCheckOutDisabled
-                    ? attendance.end_time 
-                      ? `Checked Out`
-                      : 'Check Out'
+            <TouchableOpacity 
+              style={[
+                styles.attendanceButton, 
+                !checkedIn ? styles.disabledButton : styles.checkOutButton
+              ]}
+              onPress={handleCheckOut}
+              disabled={!checkedIn || isCheckOutDisabled}
+            >
+              <MaterialCommunityIcons name="logout" size={20} color={!checkedIn || isCheckOutDisabled ? "#888" : "#fff"} />
+              <Text style={[styles.attendanceButtonText, (!checkedIn || isCheckOutDisabled) ? styles.disabledButtonText : {}]}>
+                {isCheckOutDisabled
+                    ? `Checked Out` : !checkedIn
+                  ? 'Checked Out'
                     : 'Check Out'}
-                </Text>
-              </TouchableOpacity>
+              </Text>
+            </TouchableOpacity>
             </View>
             {checkedIn && startTime && (
               <Text style={styles.checkinTimeText}>

@@ -134,7 +134,7 @@ const ProfileScreen = () => {
                 style={styles.userNameSmall}
                 numberOfLines={1}
               >
-                @{profile?.user_name}
+                {profile?.user_name}
               </Text>
               
               <View style={styles.roleContainer}>
