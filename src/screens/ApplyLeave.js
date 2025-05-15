@@ -155,8 +155,14 @@ const ApplyLeave = (props) => {
           label="Apply WFH"
           onPress={() => { validate('WH'); }}
           bgColor={colors.yellow}
-          textColor="white"
+          textColor="black"
         />
+        <SubmitButton
+        label="Apply Half Day"
+        onPress={() => { validate('HL'); }}
+        bgColor={colors.yellow}
+        textColor="black"
+      />
         <SubmitButton
           label="Apply LOP"
           onPress={() => { validate('LP'); }}
