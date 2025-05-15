@@ -664,9 +664,8 @@ const [eventLoading, setEventLoading] = useState(true);
             >
               <MaterialCommunityIcons name="logout" size={20} color={!checkedIn || isCheckOutDisabled ? "#888" : "#fff"} />
               <Text style={[styles.attendanceButtonText, (!checkedIn || isCheckOutDisabled) ? styles.disabledButtonText : {}]}>
-                {isCheckOutDisabled
-                    ? `Checked Out` : !checkedIn
-                  ? 'Checked Out'
+                {(checkedIn || isCheckInDisabled) && (!checkedIn && isCheckOutDisabled) 
+                    ? `Checked Out`
                     : 'Check Out'}
               </Text>
             </TouchableOpacity>
