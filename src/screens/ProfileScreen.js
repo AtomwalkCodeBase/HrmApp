@@ -11,6 +11,8 @@ import QRModal from '../components/QRModal';
 import HeaderComponent from '../components/HeaderComponent';
 import Loader from '../components/old_components/Loader';
 import ConfirmationModal from '../components/ConfirmationModal';
+import Constants from 'expo-constants';
+
 
 const { width, height } = Dimensions.get('window');
 const isSmallScreen = width < 375; // iPhone SE and similar small devices
@@ -28,6 +30,8 @@ const ProfileScreen = () => {
   const [useFingerprint, setUseFingerprint] = useState(false);
   const [pendingValue, setPendingValue] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+
+    const appVersion = Constants.expoConfig?.version || '0.0.1';
 
   const router = useRouter();
 
@@ -263,6 +267,11 @@ const ProfileScreen = () => {
               </Text>
             </TouchableOpacity>
           </View>
+          <View style={styles.versionContainer}>
+          <Text style={styles.versionText}>
+            App Version: {appVersion}
+          </Text>
+        </View>
 
           {/* QR Modal */}
           <QRModal
@@ -485,6 +494,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
     marginLeft: 8,
+  },
+  versionContainer: {
+    padding: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  versionText: {
+    fontSize: 12,
+    color: '#95a5a6',
   },
 });
 

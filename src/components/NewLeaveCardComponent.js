@@ -185,10 +185,10 @@ const styles = StyleSheet.create({
   },
   leaveTypeBadge: {
     padding: 6,
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     borderRadius: 6,
     marginBottom: 8,
-    minWidth: 100,
+    minWidth: 80,
     alignItems: 'center',
   },
   leaveTypeText: {

@@ -250,7 +250,10 @@ const [eventLoading, setEventLoading] = useState(true);
   };
 
   const processAttendanceData = (data) => {
-    const todayAttendance = data.find((item) => item.a_date === currentDate);
+    // const todayAttendance = data.find((item) => item.a_date === currentDate);
+    const todayAttendance = data.find((item) => 
+    item.a_date === currentDate && item.attendance_type !== "L"
+  );
 
     if (todayAttendance) {
       setCheckedIn(todayAttendance.end_time === null);

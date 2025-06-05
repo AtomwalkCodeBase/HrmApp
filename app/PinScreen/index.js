@@ -24,6 +24,8 @@ import Loader from '../../src/components/old_components/Loader';
 import ErrorModal from '../../src/components/ErrorModal';
 import { LinearGradient } from 'expo-linear-gradient';
 import ConfirmationModal from '../../src/components/ConfirmationModal';
+import Constants from 'expo-constants';
+
 
 const { width, height } = Dimensions.get('window');
 
@@ -45,8 +47,10 @@ const AuthScreen = () => {
     const [showPinInput, setShowPinInput] = useState(!showBiomatricOption);
     const [showFingerprint, setShowFingerprint] = useState(false);
     const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
-
     const openPopup = () => setModalVisible(true);
+
+      const appVersion = Constants.expoConfig?.version || '0.0.1';
+
     const maxAttempts = 5;
     const inputRefs = Array(4).fill().map(() => useRef(null));
 
@@ -288,7 +292,7 @@ const AuthScreen = () => {
                 
                 <View style={styles.footer}>
                     <Text style={styles.footerText}>© 2025 ATOMWALK. All rights reserved.</Text>
-                    <Text style={styles.versionText}>Version 1.0.12</Text>
+                    <Text style={styles.versionText}>Version {appVersion}</Text>
                 </View>
             </View>
 

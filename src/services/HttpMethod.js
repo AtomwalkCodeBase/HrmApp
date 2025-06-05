@@ -1,12 +1,12 @@
 import axios from "axios";
 // import { endpoint } from "../constants";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { addEmpLeave, endpoint, getEmpLeavedata } from "../services/ConstantServies";
+import { addEmpLeave, endpoint, getEmpLeavedata, newendpoint } from "../services/ConstantServies";
 
 export const authAxios = async (url, data) => {
     let token = await AsyncStorage.getItem('userToken');
     return axios.create({
-        baseURL: endpoint,
+        baseURL: newendpoint,
         params: data,
         headers: {
             Authorization: `Token ${token}`
@@ -17,7 +17,7 @@ export const authAxios = async (url, data) => {
 export const authAxiosPost = async (url, data) => {
   let token = await AsyncStorage.getItem('userToken');
   return axios.create({
-      baseURL: endpoint,
+      baseURL: newendpoint,
       headers: {
           Authorization: `Token ${token}`
       }
@@ -35,7 +35,7 @@ export const authAxiosFilePost = async (url, data) => {
 
 
   return axios.create({
-          baseURL: endpoint,
+          baseURL: newendpoint,
           headers: {
               Authorization: `Token ${token}`,
               'Content-Type': 'multipart/form-data',
@@ -46,7 +46,7 @@ export const authAxiosFilePost = async (url, data) => {
 
 
 export const publicAxiosRequest = axios.create({
-  baseURL: endpoint,
+  baseURL: newendpoint,
 });
 
 

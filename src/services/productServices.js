@@ -86,6 +86,7 @@ export function getEmpLeave(leave_type , emp_id, year) {
       data['attendance_data'] = checkin_data;
       // data = checkin_data;
     }
+    console.log("Data Passed===",data)
     return authAxiosPost(empCheckData, data)
   }
 
