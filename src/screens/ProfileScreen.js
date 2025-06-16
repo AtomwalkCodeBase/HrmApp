@@ -128,15 +128,14 @@ const ProfileScreen = () => {
             <View style={styles.profileInfo}>
               <Text 
                 style={styles.userName}
-                numberOfLines={1}
-                adjustsFontSizeToFit
-                minimumFontScale={0.8}
+                numberOfLines={2}
+                ellipsizeMode="tail"
               >
                 {profile?.emp_data?.name || 'Employee'}
               </Text>
               <Text 
                 style={styles.userNameSmall}
-                numberOfLines={1}
+                numberOfLines={2}
               >
                 {profile?.user_name}
               </Text>
@@ -146,7 +145,7 @@ const ProfileScreen = () => {
                   style={styles.userRole}
                   numberOfLines={1}
                 >
-                  {userGroup?.name || 'Employee'}
+                  {userGroup?.name || 'Employee Group'}
                 </Text>
               </View>
               
@@ -340,7 +339,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     elevation: 3,
     zIndex: 10,
-  },
+},
   profileHeader: {
     backgroundColor: '#fff',
     padding: isSmallScreen ? 15 : 20,
@@ -365,14 +364,15 @@ const styles = StyleSheet.create({
   },
   profileInfo: {
     flex: 1,
+    marginRight: isSmallScreen ? 40 : 50, // Add margin to prevent overlap with logout button
   },
   userName: {
     fontSize: isSmallScreen ? 18 : 20,
     fontWeight: '600',
     color: '#222',
     marginBottom: 4,
-    maxWidth: '90%',
-  },
+    maxWidth: '90%', // Limit width to prevent overlap
+},
   userNameSmall: {
     fontSize: isSmallScreen ? 12 : 14,
     color: '#7f8c8d',

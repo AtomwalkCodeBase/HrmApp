@@ -54,12 +54,21 @@ const AddAttendance = () => {
   }, [navigation]);
 
   const setdatatime = async () => {
-    let time = moment().format('hh:mm A');
-    if (moment().isBetween(moment().startOf('day').add(12, 'hours').add(1, 'minute'), moment().startOf('day').add(13, 'hours'))) {
+    const now = moment();
+    let time = now.format('hh:mm A');
+    
+    // Check if current time is between 12:00 PM and 1:00 PM (inclusive of 12:00 PM)
+    if (now.isBetween(
+      moment().startOf('day').add(12, 'hours'),  // 12:00 PM
+      moment().startOf('day').add(13, 'hours'),  // 1:00 PM
+      null, '[]'  // '[]' includes both start and end boundaries
+    )) {
+      // Replace "12" with "00" but keep "PM"
       time = time.replace(/^12/, '00');
     }
+    
     return time;
-  }
+  };
 
   useEffect(() => {
     const date = moment().format('DD-MM-YYYY');

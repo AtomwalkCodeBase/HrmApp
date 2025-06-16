@@ -94,80 +94,102 @@ const [eventLoading, setEventLoading] = useState(true);
   }, [empId]);
 
   const setdatatime = async () => {
-    let time = moment().format('hh:mm A');
-    if (moment().isBetween(moment().startOf('day').add(12, 'hours').add(1, 'minute'), moment().startOf('day').add(13, 'hours'))) {
-      time = time.replace(/^12/, '00');
-    }
-    return time;
-  };
-
+  const now = moment();
+  let time = now.format('hh:mm A');
   
+  // Check if current time is between 12:00 PM and 1:00 PM (inclusive of 12:00 PM)
+  if (now.isBetween(
+    moment().startOf('day').add(12, 'hours'),  // 12:00 PM
+    moment().startOf('day').add(13, 'hours'),  // 1:00 PM
+    null, '[]'  // '[]' includes both start and end boundaries
+  )) {
+    // Replace "12" with "00" but keep "PM"
+    time = time.replace(/^12/, '00');
+  }
+  
+  return time;
+};
+
 
 
   const fetchData = async () => {
     setIsLoading(true);
     try {
+      // Fetch profile data
       const profileRes = await getProfileInfo();
       const profileData = profileRes.data;
+      
+      // Validate and set profile data
+      if (!profileData) throw new Error("No profile data received");
       
       // Set profile state
       setProfile(profileData);
       
-      // Store profile data in AsyncStorage
-      if (profileData) {
-        // Store the entire profile data
+      // Store profile data
+      try {
         await AsyncStorage.setItem('profile', JSON.stringify(profileData));
-        // Also store just the name if you need it separately
         if (profileData?.emp_data?.name) {
           await AsyncStorage.setItem('profilename', profileData.emp_data.name);
         }
+      } catch (storageError) {
+        console.error("AsyncStorage error:", storageError);
       }
 
-      if (profileData?.emp_data?.emp_id) {
-        setEmpId(profileData.emp_data.emp_id);
+      // Set employee ID if available
+      const employeeId = profileData?.emp_data?.emp_id;
+      if (employeeId) {
+        setEmpId(employeeId);
       }
 
-      
+      // Set employee data and manager status
       setEmployeeData(profileData);
-      setIsManager(profileData.user_group?.is_manager || false);
+      setIsManager(!!profileData.user_group?.is_manager);
       
-      // Check if today is employee's birthday
+      // Check birthday
       if (profileData?.emp_data?.dob) {
         checkIfBirthday(profileData.emp_data.dob);
       }
 
+      // Fetch company info
       const companyRes = await getCompanyInfo();
-      setCompany(companyRes.data);
-      
-      // Mock active events data
-      
-      
+      if (companyRes.data) {
+        setCompany(companyRes.data);
+      }
+
       // Set current date and time
       const date = moment().format('DD-MM-YYYY');
       let time = moment().format('hh:mm A');
 
-      if (moment().isBetween(moment().startOf('day').add(12, 'hours').add(1, 'minute'), moment().startOf('day').add(13, 'hours'))) {
+      // Handle noon hour conversion
+      if (moment().isBetween(
+        moment().startOf('day').add(12, 'hours').add(1, 'minute'), 
+        moment().startOf('day').add(13, 'hours')
+      )) {
         time = time.replace(/^12/, '00');
       }
 
       setCurrentDate(date);
       setCurrentTimeStr(time);
       
-      // Fetch attendance data
-      const data = {
-        emp_id: profileData?.emp_data,
-        month: moment().format('MM'),
-        year: moment().format('YYYY'),
-      };
-      fetchAttendanceDetails(data);
-      
+      // Fetch attendance data - FIXED emp_id reference here
+      if (employeeId) {
+        const data = {
+          emp_id: employeeId,  // Using the extracted employeeId
+          month: moment().format('MM'),
+          year: moment().format('YYYY'),
+        };
+        await fetchAttendanceDetails(data);
+      }
+
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("Error in fetchData:", error);
+      // Optional: Show error to user
+      Alert.alert("Error", "Failed to load data. Please try again.");
     } finally {
       setIsLoading(false);
       setRefreshing(false);
     }
-};
+  };
 
 
   const fetchEvents = async () => {
@@ -245,7 +267,6 @@ const [eventLoading, setEventLoading] = useState(true);
     getEmpAttendance(data).then((res) => {
       setAttData(res.data);
       processAttendanceData(res.data);
-      setIsLoading(false);
     });
   };
 
@@ -379,7 +400,7 @@ const [eventLoading, setEventLoading] = useState(true);
   };
 
   const handleCheck = async (data) => {
-    setIsLoading(true);
+    
     const { status } = await Location.requestForegroundPermissionsAsync();
   
     if (status !== 'granted') {
@@ -409,9 +430,9 @@ const [eventLoading, setEventLoading] = useState(true);
     const todayAttendance = attData.find((item) => item.a_date === currentDate);
     const attendanceId = todayAttendance ? todayAttendance.id : null;
     const time = await setdatatime();
-    
+    console.log("Emp Id==",empId);
     const checkPayload = {
-      emp_id: employeeData?.emp_data?.emp_id,
+      emp_id: empId,
       call_mode: data,
       time: time,
       geo_type: data === 'ADD' ? 'I' : 'O',
@@ -459,6 +480,7 @@ const [eventLoading, setEventLoading] = useState(true);
 
 
   const handleCheckIn = () => {
+    setIsLoading(true);
     handleCheck('ADD');
   };
 
@@ -471,6 +493,7 @@ const [eventLoading, setEventLoading] = useState(true);
       handleError('Remark cannot be empty', 'remarks');
     } else {
       setIsRemarkModalVisible(false);
+      setIsLoading(true);
       handleCheck('UPDATE');
     }
   };
