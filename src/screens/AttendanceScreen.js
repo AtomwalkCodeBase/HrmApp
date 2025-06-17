@@ -36,7 +36,7 @@ const AddAttendance = () => {
     designation: 'Position',
   });
   const [checkedIn, setCheckedIn] = useState(false);
-  const [startTime, setStartTime] = useState(null);
+  // const [startTime, setStartTime] = useState(null);
   const [remark, setRemark] = useState('');
   const [errors, setErrors] = useState({});
   const [refreshKey, setRefreshKey] = useState(0);
@@ -83,7 +83,6 @@ const AddAttendance = () => {
 
     getProfileInfo().then((res) => {
       setEmployeeData(res.data);
-      setIsLoading(false);
     });
   }, [refreshKey]);
 
@@ -116,11 +115,11 @@ const AddAttendance = () => {
 
     if (todayAttendance) {
       setCheckedIn(todayAttendance.end_time === null);
-      setStartTime(todayAttendance.start_time);
+      // setStartTime(todayAttendance.start_time);
       setAttendance(todayAttendance);
     } else {
       setCheckedIn(false);
-      setStartTime(null);
+      // setStartTime(null);
       setAttendance({});
     }
   };
@@ -140,22 +139,17 @@ const AddAttendance = () => {
     }
   
     let location = null;
-    let retries = 0;
+    // let retries = 0;
   
-    while (!location && retries < 5) {
-      try {
-        location = await Location.getCurrentPositionAsync({});
-      } catch (error) {
-        retries += 1;
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      }
-    }
-  
-    if (!location) {
+    try {
+      location = await Location.getCurrentPositionAsync({});
+    } catch (error) {
       Alert.alert('Error', 'Unable to fetch location. Please try again.');
       setIsLoading(false);
       return;
     }
+  
+    
   
     const todayAttendance = attData.find((item) => item.a_date === currentDate);
     const attendanceId = todayAttendance ? todayAttendance.id : null;
@@ -176,7 +170,7 @@ const AddAttendance = () => {
     postCheckIn(checkPayload)
       .then(() => {
         setCheckedIn(data === 'ADD');
-        setStartTime(currentTime);
+        // setStartTime(currentTime);
         setRefreshKey((prevKey) => prevKey + 1);
         setIsSuccessModalVisible(true);
         if (data === 'UPDATE') setRemark('');

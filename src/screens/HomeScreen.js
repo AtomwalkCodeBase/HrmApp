@@ -50,7 +50,7 @@ const HomePage = ({ navigation }) => {
   const [profile, setProfile] = useState({});
   const [company, setCompany] = useState({});
   const [empId, setEmpId] = useState('');
-  const [empNId, setEmpNId] = useState('');
+  // const [empNId, setEmpNId] = useState('');
   const [isConnected, setIsConnected] = useState(true);
   const [isManager, setIsManager] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -71,10 +71,9 @@ const HomePage = ({ navigation }) => {
   const [errors, setErrors] = useState({});
   const [isRemarkModalVisible, setIsRemarkModalVisible] = useState(false);
   const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
-  const [previousDayUnchecked, setPreviousDayUnchecked] = useState(false);
+  // const [previousDayUnchecked, setPreviousDayUnchecked] = useState(false);
   
   // Active events
-  const [activeEvents, setActiveEvents] = useState([]);
   const [eventData, setEventData] = useState([]);
 const [filteredEvents, setFilteredEvents] = useState([]);
 const [eventLoading, setEventLoading] = useState(true);
@@ -178,7 +177,7 @@ const [eventLoading, setEventLoading] = useState(true);
           month: moment().format('MM'),
           year: moment().format('YYYY'),
         };
-        await fetchAttendanceDetails(data);
+        fetchAttendanceDetails(data);
       }
 
     } catch (error) {
@@ -258,7 +257,6 @@ const [eventLoading, setEventLoading] = useState(true);
   const handlePressApproveLeave = () => {  
     router.push({
       pathname: 'ApproveLeaves',
-      params: { empNId },
     });
   };
 
@@ -410,22 +408,16 @@ const [eventLoading, setEventLoading] = useState(true);
     }
   
     let location = null;
-    let retries = 0;
   
-    while (!location && retries < 5) {
-      try {
-        location = await Location.getCurrentPositionAsync({});
-      } catch (error) {
-        retries += 1;
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      }
-    }
-  
-    if (!location) {
+    try {
+      location = await Location.getCurrentPositionAsync({});
+    } catch (error) {
       Alert.alert('Error', 'Unable to fetch location. Please try again.');
       setIsLoading(false);
       return;
     }
+  
+    
   
     const todayAttendance = attData.find((item) => item.a_date === currentDate);
     const attendanceId = todayAttendance ? todayAttendance.id : null;
@@ -517,7 +509,7 @@ const [eventLoading, setEventLoading] = useState(true);
 
   // Determine button states for check-in/out
   const isCheckInDisabled = checkedIn || attendance.geo_status === 'O' || !!attendance.start_time || !!attendance.start_time || 
-                          (employeeData?.is_shift_applicable && previousDayUnchecked) || (attendance && attendance.start_time === null);
+                          (employeeData?.is_shift_applicable) || (attendance && attendance.start_time === null);
   const isCheckOutDisabled = !checkedIn || attendance.geo_status !== 'I' || !!attendance.end_time;
 
   
@@ -622,16 +614,7 @@ const [eventLoading, setEventLoading] = useState(true);
         </View>
       </View>
       
-      {/* <TouchableOpacity 
-        style={styles.profileButton}
-        onPress={() => router.push('profile')}
-      >
-        {profile?.emp_data?.image ? (
-          <Image source={{ uri: profile?.emp_data?.image }} style={styles.profileImage} />
-        ) : (
-          <FontAwesome5 name="user-circle" size={width * 0.09} color="#a970ff" />
-        )}
-      </TouchableOpacity> */}
+     
     </View>
     
     <View style={styles.welcomeSection}>
@@ -673,7 +656,7 @@ const [eventLoading, setEventLoading] = useState(true);
             >
               <MaterialCommunityIcons name="login" size={20} color={checkedIn || isCheckInDisabled ? "#888" : "#fff"} />
               <Text style={[styles.attendanceButtonText, (checkedIn || isCheckInDisabled) ? styles.disabledButtonText : {}]}>
-                {employeeData?.is_shift_applicable && previousDayUnchecked 
+                {employeeData?.is_shift_applicable 
                   ? "Complete yesterday's checkout first"
                   : (checkedIn || isCheckInDisabled) 
                     ? `Checked In`
@@ -1049,17 +1032,6 @@ companyName: {
   cardsSlider: {
     paddingRight: 20,
   },
-  // birthdayCard: {
-  //   width: width * 0.75,
-  //   marginRight: 15,
-  //   borderRadius: 15,
-  //   overflow: 'hidden',
-  //   elevation: 4,
-  //   shadowColor: '#a970ff',
-  //   shadowOffset: { width: 0, height: 2 },
-  //   shadowOpacity: 0.2,
-  //   shadowRadius: 4,
-  // },
   birthdayCard: {
     width: width * 0.75,
     marginRight: 15,
@@ -1075,7 +1047,6 @@ companyName: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    // height: '100%',  // This ensures the gradient fills the card
   },
   
   birthdayIconContainer: {
@@ -1208,18 +1179,6 @@ companyName: {
     fontSize: width * 0.035,
     fontWeight: '500',
   },
-  // modalBackdrop: {
-  //   flex: 1,
-  //   backgroundColor: 'rgba(0,0,0,0.5)',
-  //   justifyContent: 'center',
-  //   alignItems: 'center',
-  // },
-  // modalContent: {
-  //   width: '90%',
-  //   backgroundColor: '#fff',
-  //   borderRadius: 12,
-  //   padding: 20,
-  // },
   modalBackdrop: {
     flex: 1,
     justifyContent: 'center',
