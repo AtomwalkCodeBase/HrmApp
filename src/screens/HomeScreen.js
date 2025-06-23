@@ -45,9 +45,9 @@ const { width, height } = Dimensions.get('window');
 
 const HomePage = ({ navigation }) => {
   const router = useRouter();
-  const { logout, userToken } = useContext(AppContext);
+  const { profile, logout, userToken,setReload,pisLoading } = useContext(AppContext);
   const [loading, setIsLoading] = useState(false);
-  const [profile, setProfile] = useState({});
+  // const [profile, setProfile] = useState({});
   const [company, setCompany] = useState({});
   const [empId, setEmpId] = useState('');
   // const [empNId, setEmpNId] = useState('');
@@ -79,6 +79,10 @@ const [filteredEvents, setFilteredEvents] = useState([]);
 const [eventLoading, setEventLoading] = useState(true);
   
   const fadeAnim = useState(new Animated.Value(0))[0];
+
+  useEffect(()=>{
+    setReload(true)
+  },[])
 
   useLayoutEffect(() => {
     if (navigation) {
@@ -115,16 +119,11 @@ const [eventLoading, setEventLoading] = useState(true);
     setIsLoading(true);
     try {
       // Fetch profile data
-      const profileRes = await getProfileInfo();
-      const profileData = profileRes.data;
+       const profileData = profile;
       
       // Validate and set profile data
       if (!profileData) throw new Error("No profile data received");
       
-      // Set profile state
-      setProfile(profileData);
-      
-      // Store profile data
       try {
         await AsyncStorage.setItem('profile', JSON.stringify(profileData));
         if (profileData?.emp_data?.name) {
@@ -355,7 +354,7 @@ const [eventLoading, setEventLoading] = useState(true);
       clearInterval(interval);
       netInfoUnsubscribe();
     };
-  }, [isConnected]);
+  }, [isConnected,profile]);
 
   useFocusEffect(
   useCallback(() => {

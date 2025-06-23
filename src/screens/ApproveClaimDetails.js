@@ -1,5 +1,5 @@
 import { useNavigation, useRouter } from 'expo-router';
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useContext, useEffect, useLayoutEffect, useState } from 'react';
 import { Alert, Linking, SafeAreaView, ScrollView, View, StyleSheet,  Modal, Image, Text, TouchableOpacity } from 'react-native';
 import styled from 'styled-components/native';
 import { getProfileInfo } from '../services/authServices';
@@ -12,6 +12,7 @@ import SuccessModal from '../components/SuccessModal'; // Import SuccessModal co
 import Loader from '../components/old_components/Loader';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import { MaterialIcons } from '@expo/vector-icons';
+import { AppContext } from '../../context/AppContext';
 
 // const Container = styled.View`
 //   flex: 1;
@@ -93,7 +94,8 @@ import { MaterialIcons } from '@expo/vector-icons';
 // `;
 
 const ApproveClaimDetails = (props) => {
-  const [profile, setProfile] = useState({});
+  const { profile } = useContext(AppContext);
+  // const [profile, setProfile] = useState({});
   const [showSuccessModal, setShowSuccessModal] = useState(false); // State to control SuccessModal visibility
   const [isLoading, setIsLoading] = useState(false); // Loader state
   const [selectedImageUrl, setSelectedImageUrl] = useState(null);
@@ -134,9 +136,6 @@ const ApproveClaimDetails = (props) => {
     const fetchData = async () => {
       setIsLoading(true); // Show loader
       try {
-        const profileRes = await getProfileInfo();
-        setProfile(profileRes.data);
-
         const approversRes = await getClaimApprover();
         setManagers(approversRes.data);
       } catch (error) {

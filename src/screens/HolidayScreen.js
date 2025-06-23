@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useContext, useEffect, useLayoutEffect, useState } from 'react';
 import { View, ScrollView, TouchableOpacity, Alert, Text } from 'react-native';
 import styled from 'styled-components/native';
 import { getEmpHoliday, postEmpLeave } from '../services/productServices';
@@ -11,6 +11,7 @@ import Loader from '../components/old_components/Loader'; // Import the Loader c
 import SuccessModal from '../components/SuccessModal';
 import ErrorModal from '../components/ErrorModal';
 import ConfirmationModal from '../components/ConfirmationModal';
+import { AppContext } from '../../context/AppContext';
 
 const monthNameMap = {
   'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4,
@@ -90,10 +91,11 @@ const HolidayName = styled.Text`
 `;
 
 const HolidayScreen = () => {
+  const { profile } = useContext(AppContext);
   const [holidays, setHolidays] = useState({});
   const [holidaydata, setHolidaydata] = useState({});
   const [activeTab, setActiveTab] = useState('Company Holiday');
-  const [profile, setProfile] = useState({});
+  // const [profile, setProfile] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false); // Modal visibility state
   const [successMessage, setSuccessMessage] = useState(''); // Success message state
@@ -113,7 +115,7 @@ const HolidayScreen = () => {
 
   useEffect(() => {
     const data = { year: currentYear };
-    getProfileInfo().then(res => setProfile(res.data));
+    // getProfileInfo().then(res => setProfile(res.data));
     fetchAttendanceDetails(data);
   }, [currentYear]);
 

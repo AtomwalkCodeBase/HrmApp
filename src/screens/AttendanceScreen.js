@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect, useCallback } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useCallback, useContext } from 'react';
 import { 
   View, 
   Text, 
@@ -23,10 +23,12 @@ import Loader from '../components/old_components/Loader';
 import SuccessModal from '../components/SuccessModal';
 import HeaderComponent from '../components/HeaderComponent';
 import { LinearGradient } from 'expo-linear-gradient';
+import { AppContext } from '../../context/AppContext';
 
 const { width } = Dimensions.get('window');
 
 const AddAttendance = () => {
+  const { profile } = useContext(AppContext);
   const [currentDate, setCurrentDate] = useState('');
   const [currentTime, setCurrentTime] = useState('');
   const [attendance, setAttendance] = useState({});
@@ -81,9 +83,8 @@ const AddAttendance = () => {
     setCurrentDate(date);
     setCurrentTime(time);
 
-    getProfileInfo().then((res) => {
-      setEmployeeData(res.data);
-    });
+    setEmployeeData(profile);
+      setIsLoading(false);
   }, [refreshKey]);
 
   useFocusEffect(
@@ -106,7 +107,7 @@ const AddAttendance = () => {
     });
   };
 
-  console.log("Att data---",attData)
+  // console.log("Att data---",attData)
 
   const processAttendanceData = (data) => {
     const todayAttendance = data.find((item) => 

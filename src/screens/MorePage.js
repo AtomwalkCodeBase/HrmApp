@@ -115,6 +115,11 @@ const MorePage = () => {
       params: { empId },
     });
   };
+    const handlePressTraining = () => {  
+    router.push({
+      pathname: 'TrainingScr',
+    });
+  };
   
 //   const handlePressResolve = () => {  
 //     router.push({
@@ -179,7 +184,14 @@ const handlePressProfile = () => {
     icon: <MaterialIcons name="tips-and-updates" size={24} color="#7e57c2" />,
     action: handlePressEvent,
     show: true
-  }
+  },
+    {
+    title: "Training",
+    subTitle: "Check your training details",
+    icon: <MaterialIcons name="book" size={24} color="#7e57c2" />,
+    action: handlePressTraining,
+    show: true
+}
 ].filter(item => item.show); // This filters out any items where show is false
 
   return (

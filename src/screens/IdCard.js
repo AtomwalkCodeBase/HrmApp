@@ -15,7 +15,7 @@ import { captureRef } from 'react-native-view-shot';
 import * as Sharing from 'expo-sharing';
 import { useNavigation } from '@react-navigation/native';
 import { AppContext } from '../../context/AppContext';
-import { getCompanyInfo, getProfileInfo } from '../services/authServices';
+import { getCompanyInfo } from '../services/authServices';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import QRCode from 'react-native-qrcode-svg';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -29,8 +29,8 @@ const { width, height } = Dimensions.get('window');
 
 const IdCard = () => {
   const navigation = useNavigation();
-  const { logout } = useContext(AppContext);
-  const [profile, setProfile] = useState({});
+  const { profile, logout } = useContext(AppContext);
+  // const [profile, setProfile] = useState({});
   const [company, setCompany] = useState({});
   const [userPin, setUserPin] = useState(null);
   const cardRef = useRef();
@@ -45,12 +45,9 @@ const IdCard = () => {
 
     const fetchData = async () => {
       try {
-        const [profileResponse, companyResponse] = await Promise.all([
-          getProfileInfo(),
+        const [companyResponse] = await Promise.all([
           getCompanyInfo(),
         ]);
-
-        setProfile(profileResponse?.data || {});
         setCompany(companyResponse?.data || {});
       } catch (error) {
         console.error('Error fetching data:', error);

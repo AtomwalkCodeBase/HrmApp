@@ -77,3 +77,7 @@ export const getEventtList = `${newendpoint}/get_employee_events/${db_name}/`;
 export const getEventResponse = `${newendpoint}/get_event_response/${db_name}/`;
 export const processEventRes = `${newendpoint}/process_emp_event_response/${db_name}/`;
 
+export const getTrainingModuleData = `${newendpoint}/get_training_session_list/${db_name}/`;
+export const getEmpTrainingListData = `${newendpoint}/get_emp_training_list/${db_name}/`;
+export const processEmpTraining = `${newendpoint}/process_emp_training/${db_name}/`;
+

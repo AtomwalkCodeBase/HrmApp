@@ -3,7 +3,6 @@ import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions, ScrollView
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { MaterialIcons, FontAwesome } from '@expo/vector-icons';
 import { AppContext } from '../../context/AppContext';
-import { getProfileInfo } from '../services/authServices';
 import { useNavigation, useRouter } from 'expo-router';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -20,11 +19,9 @@ const isMediumScreen = width >= 375 && width < 414; // Most standard phones
 const isLargeScreen = width >= 414; // Plus/Pro Max sizes
 
 const ProfileScreen = () => {
-  const { logout } = useContext(AppContext);
-  const [profile, setProfile] = useState({});
+  const { profile,isLoading,logout } = useContext(AppContext);
   const [userGroup, setUserGroup] = useState({});
   const [userPin, setUserPin] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
   const [useFingerprint, setUseFingerprint] = useState(false);
@@ -36,27 +33,13 @@ const ProfileScreen = () => {
   const router = useRouter();
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      setIsLoading(true);
-      try {
-        const res = await getProfileInfo();
-        setProfile(res?.data);
-        setUserGroup(res.data?.user_group);
-      } catch (error) {
-        console.error('Failed to fetch profile:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     const fetchUserPin = async () => {
       const storedPin = await AsyncStorage.getItem('userPin');
       setUserPin(storedPin);
     };
-
-    fetchProfile();
     fetchUserPin();
   }, []);
+
 
   useEffect(() => {
     const fetchFingerprintPreference = async () => {

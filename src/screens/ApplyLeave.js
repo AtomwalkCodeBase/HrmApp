@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useLayoutEffect, useEffect } from 'react';
+import React, { useState, useCallback, useLayoutEffect, useEffect, useContext } from 'react';
 import { Keyboard, SafeAreaView, Alert } from 'react-native';
 import { useNavigation, useRouter } from 'expo-router';
 import { postEmpLeave } from '../services/productServices';
@@ -9,10 +9,11 @@ import SubmitButton from '../components/SubmitButton';
 import SuccessModal from '../components/SuccessModal'; // Import the SuccessModal component
 import Loader from '../components/old_components/Loader'; // Import the Loader component
 import styled from 'styled-components/native';
-import { getProfileInfo } from '../services/authServices';
+// import { getProfileInfo } from '../services/authServices';
 import { colors } from '../Styles/appStyle';
 import HeaderComponent from '../components/HeaderComponent';
 import ErrorModal from '../components/ErrorModal';
+import { AppContext } from '../../context/AppContext';
 
 const Container = styled.ScrollView`
   flex: 1;
@@ -22,12 +23,13 @@ const Container = styled.ScrollView`
 `;
 
 const ApplyLeave = (props) => {
+  const { profile } = useContext(AppContext);
   const [fromDate, setFromDate] = useState(new Date());
   const [toDate, setToDate] = useState(new Date());
   const [remarks, setRemarks] = useState('');
   const [numOfDays, setNumOfDays] = useState(0);
   const [errors, setErrors] = useState({});
-  const [profile, setProfile] = useState({});
+  // const [profile, setProfile] = useState({});
   
   const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
   const [isErrorModalVisible, setIsErrorModalVisible] = useState(false); // Error modal visibility state
@@ -38,11 +40,11 @@ const ApplyLeave = (props) => {
   const navigation = useNavigation();
   const router = useRouter();
 
-  useEffect(() => {
-    getProfileInfo().then((res) => {
-      setProfile(res.data);
-    });
-  }, []);
+  // useEffect(() => {
+  //   getProfileInfo().then((res) => {
+  //     setProfile(res.data);
+  //   });
+  // }, []);
 
   useLayoutEffect(() => {
     navigation.setOptions({

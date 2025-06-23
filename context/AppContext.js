@@ -2,7 +2,7 @@ import React, { createContext, useState, useEffect } from 'react';
 import { publicAxiosRequest } from "../src/services/HttpMethod";
 import { loginURL } from "../src/services/ConstantServies";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getCompanyInfo } from '../src/services/authServices';
+import { getCompanyInfo, getProfileInfo } from '../src/services/authServices';
 import axios from "axios";
 import { useRouter } from 'expo-router';
 import NetInfo from '@react-native-community/netinfo';
@@ -12,10 +12,13 @@ const AppContext = createContext();
 
 const AppProvider = ({ children }) => {
     const [isLoading, setIsLoading] = useState(false);
+    const [pisLoading, setPIsLoading] = useState(true);
     const [userToken, setUserToken] = useState(null);
     const [companyInfo, setCompanyInfo] = useState(null);
     const [dbName, setDbName] = useState(null);
     const [isConnected, setIsConnected] = useState(true);
+    const [profile, setProfile] = useState({});
+    const [reLoad, setReload] = useState(false);
 
     const router = useRouter();
 
@@ -127,6 +130,27 @@ const AppProvider = ({ children }) => {
         isLoggedIn();
     }, []);
 
+    useEffect(() => {
+        if(reLoad){
+    const fetchProfile = async () => {
+      try {
+        const res = await getProfileInfo();
+        setProfile(res?.data);
+        console.log("data in context", res?.data)
+        AsyncStorage.setItem("EmpId",res?.data?.emp_data?.emp_id)
+
+      } catch (error) {
+        console.error('Failed to fetch profile:', error);
+      } finally {
+        setPIsLoading(false);
+      }
+    };
+
+      fetchProfile();
+}
+  }, [reLoad]);
+
+
     return (
         <AppContext.Provider value={{
             login,
@@ -137,7 +161,10 @@ const AppProvider = ({ children }) => {
             dbName,
             isConnected,
             checkNetwork,
-            setIsLoading
+            setIsLoading,
+            profile,
+            setReload,
+            pisLoading
         }}>
             {children}
             {/* Show Network Error Modal only when disconnected */}
